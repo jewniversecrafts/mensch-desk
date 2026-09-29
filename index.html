@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mensch at the Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap">
+<style>
+/* Layout: one-screen chat. Brand band on top, conversation in the middle, reply bar pinned below. Single warm-editorial look by choice. */
+:root{
+  --cream:#F5F0E8; --navy:#1B2A4A; --gold:#C9A84C; --white:#FFFFFF;
+  --line:rgba(27,42,74,.22); --soft:rgba(27,42,74,.62);
+  --f-display:"Montserrat",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --f-body:"Montserrat",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--cream);color:var(--navy);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.app{height:100%;height:100dvh;min-height:480px;display:flex;flex-direction:column;max-width:680px;margin:0 auto;padding-inline:16px;box-sizing:border-box}
+header{display:flex;align-items:center;gap:14px;padding-block:14px 12px;border-bottom:1.5px solid var(--line)}
+header img{width:112px;height:auto;flex:none}
+.brand{min-width:0}
+.brand h1{font-family:var(--f-display);font-weight:700;font-size:17px;margin:0;letter-spacing:.01em;text-wrap:balance}
+.brand p{margin:2px 0 0;font-size:12.5px;color:var(--soft)}
+#log{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:18px;display:flex;flex-direction:column;gap:12px;min-height:240px}
+.msg{max-width:86%;padding:11px 14px;border-radius:12px;white-space:pre-wrap;word-wrap:break-word;min-width:0}
+.bot{align-self:flex-start;background:var(--white);border:1.5px solid var(--line)}
+.me{align-self:flex-end;background:var(--navy);color:var(--white)}
+.thinking{color:var(--soft);font-style:italic}
+.card{align-self:flex-start;width:min(100%,380px);background:var(--white);border:1.5px solid var(--navy);border-radius:12px;padding:14px;display:grid;gap:10px;box-sizing:border-box}
+.card .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--soft);font-weight:500}
+.card h2{margin:0;font-size:16px;font-weight:700;text-wrap:balance}
+.card .price{font-weight:700;font-variant-numeric:tabular-nums}
+.card .row{display:flex;flex-wrap:wrap;gap:8px}
+.card .q{background:var(--cream);border-radius:8px;padding:8px 10px;font-size:14px}
+.card .note{font-size:12.5px;color:var(--soft)}
+.card .list{display:grid;gap:2px}
+.card .li{display:flex;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--line);color:var(--navy);text-decoration:none;font-size:14px}
+.card .li:last-child{border-bottom:0}
+.card .li:hover{text-decoration:underline}
+.card .amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 16px;border-radius:10px;font:700 14px var(--f-body);text-decoration:none;cursor:pointer;border:1.5px solid var(--navy)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.btn.ghost{background:var(--white);color:var(--navy)}
+.btn:focus-visible,.chip:focus-visible,#send:focus-visible,#box:focus-visible{outline:3px solid var(--navy);outline-offset:2px}
+#chips{display:flex;flex-wrap:wrap;gap:8px;padding-block:4px 6px;flex:none}#chips:empty{display:none}
+.chip{background:var(--white);color:var(--navy);border:1.5px solid var(--navy);border-radius:12px;padding:8px 12px;font:500 13.5px var(--f-body);cursor:pointer}
+.chip:hover{background:var(--navy);color:var(--white)}
+form{display:flex;gap:8px;padding-block:6px calc(12px + env(safe-area-inset-bottom,0px));border-top:1.5px solid var(--line)}
+#box{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:15px var(--f-body);color:var(--navy);background:var(--white)}
+#send{background:var(--navy);color:var(--white);border:0;border-radius:10px;padding:0 16px;font:700 14px var(--f-body);cursor:pointer}
+#send:disabled{opacity:.5;cursor:default}
+.foot{font-size:11.5px;color:var(--soft);padding-block:0 8px}
+@media (max-width:600px){
+  header{padding-block:8px 8px;gap:10px}
+  header img{width:64px!important}
+  .brand h1{font-size:18px!important}
+  .brand p{display:none}
+  .foot{display:none}
+
+  body{font-size:17.5px;line-height:1.55}
+  header img{width:84px}
+  .brand h1{font-size:19px}
+  .brand p{font-size:13.5px}
+  .msg{max-width:94%;padding:12px 15px}
+  .card{width:100%;padding:16px}
+  .card h2{font-size:19px}
+  .card .price{font-size:17px}
+  .card .li{font-size:16.5px;padding:11px 2px}
+  .card .note{font-size:14px}
+  .card .q{font-size:16.5px}
+  .btn{min-height:48px;font-size:16px}
+  .chip{font-size:16px;padding:10px 14px}
+  #box{font-size:17px;padding:12px 14px}
+  #send{font-size:16px;padding:0 18px}
+  .foot{font-size:13px}
+}
+@media (prefers-reduced-motion:no-preference){.msg,.card{animation:in .22s ease-out both}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+
+<div class="app">
+  <header>
+    <img alt="Jewniverse Crafts" src="data:image/png;base64,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">
+    <div class="brand">
+      <h1>The Mensch at the Desk</h1>
+      <p>Laser cut and laser engraved Judaica, made to order in Richmond.</p>
+    </div>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <div id="chips"></div>
+  <form id="f">
+    <label for="box" style="position:absolute;left:-9999px">Your message</label>
+    <input id="box" autocomplete="off" placeholder="Type a question">
+    <button id="send" type="submit">Send</button>
+  </form>
+  <p class="foot">AI sales assistant trained on my shop. I review every order and send a proof before I engrave.</p>
+</div>
+
+<script>
+const SHOP="https://nas.com/jewniversecrafts";
+const url=s=>SHOP+"/physical-products/"+s;
+const P={
+ dreidel:{name:"Hanukkah Dreidel Coaster Set",price:"$48, or $58 with your family name on the base",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
+ dreidelName:{name:"Dreidel Coaster Set, family name base",price:"$58",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
+ miracle:{name:"Hanukkah Miracle Coasters",price:"$5 each, 2 for $10, 4 for $20",slug:"hanukkah-miracle-wood-coaster",custom:"Festive, useful, and I can put a name on the back.",name_cta:true},
+ doorsign:{name:"Hanukkah Door Corner Welcome Sign",price:"$42",slug:"hanukkah-door-corner-welcome-sign",custom:"It greets every guest at the door."},
+ shelf:{name:"Hanukkah Layered Wood Shelf Sitter",price:"from $95",slug:"modern-hamsa-menorah-shadow-box",custom:"Layered wood, three sizes."},
+ winetag:{name:"Shabbat or Chag Survival Kit Wine Tag",price:"$10 to $18",slug:"shabbat-survival-kit-wine-bottle-tag",custom:"It dresses up any bottle, and I can put a name on the back.",name_cta:true},
+ mitzvahSign:{name:"Mid-Century Modern Star of David",price:"from $70",slug:"personalized-bar-mitzvah-wood-sign-gold-star-of-david-midcentury-modern-25-colors",custom:"A layered bar/bat mitzvah plaque with a mid-century modern Star of David design and their name in Hebrew or English, Torah portion, and dates. You pick the colors for the top and bottom layers. 6x6 $70, 9x9 $101, 11x11 $146.",name_cta:true},
+ box:{name:"Bar Mitzvah Keepsake Box",price:"$138",slug:"personalized-bar-mitzvah-keepsake-box",custom:"A place for the memories from the big day.",name_cta:true},
+ weddingSign:{name:"Jewish Wedding Sign",price:"from $65",slug:"custom-heirloom-jewish-home-plaque",custom:"Their family name and est. date, each cut as its own piece. 12x6 $65, 16x8 $95, 16x11 $125.",name_cta:true},
+ tree6:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 2 names, plus a date. Any language, Hebrew included.",name_cta:true},
+ tree11:{name:"Tree of Life Wall Art, 11 inch",price:"$113",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 6 names, plus a date. Any language, Hebrew included.",name_cta:true},
+ treeMem:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Their name and dates, in Hebrew, English, or both.",memorial:true},
+ letters:{name:"Custom Hebrew Letter Cutouts",price:"$3.99 to $12.99 per letter, by size",slug:"custom-hebrew-name-cutouts-wood",custom:"Wood Hebrew letters, cut as separate pieces. Pick the size and one of 25+ colors.",name_cta:true},
+ keepsake:{name:"Tree of Life Keepsake",price:"$190",slug:"personalized-tree-of-life-keepsake",custom:"12 inch hand-painted layered Tree of Life, stained glass look backing, with their names and date engraved around the edge.",name_cta:true},
+ safari:{name:"Safari Animals Cutout Wood Letters",price:"from $5 per letter",slug:"floral-cutout-wood-letters-az",custom:"English letters A to Z with safari animals cut out."},
+ farm:{name:"Farm Scene Alphabet Letter Cutout",price:"from $5 per letter",slug:"farm-scene-alphabet-letter-cutout",custom:"English letters A to Z with farm animals cut out."},
+ baby:{name:"Baby Stats Name Sign",price:"from $75",slug:"custom-baby-stats-name-sign-letter",custom:"Baby's name painted on the front, stats engraved on the corners. 6 inch $75, 10 inch $100, 12 inch $149.",name_cta:true},
+ heartHamsa:{name:"Heart Hamsa Wall Decor",price:"from $32",slug:"heart-hamsa-wall-decor-3-sizes",custom:"A single layer of 1/8 inch wood. You pick the color. About 4 inch $32, 6 inch $58, 11.5 inch $122."},
+ jerusalem:{name:"Jerusalem Hamsa Layered Wood Art",price:"from $83",slug:"jerusalem-hamsa-layered-wood-art",custom:"Layered Jerusalem skyline, and I can engrave the border. 6x6 $83 up to 10x10 $192.",name_cta:true},
+ ahava:{name:"Ahava Heart Hebrew Stand Sign",price:"$92",slug:"ahava-heart-hebrew-wood-stand-sign",custom:"Hand-painted, and you pick the letter color."},
+ mug:{name:"Shalom Y'all Mug",price:"$17.99",slug:"colorful-hamsa-shalom-mug",custom:"Printed and shipped by my print partner."},
+};
+// lower listed tier for "too expensive"
+const LOWER={dreidelName:"dreidel",dreidel:"miracle",shelf:"doorsign",doorsign:"miracle",box:"mitzvahSign",tree11:"tree6",tree6:"heartHamsa",baby:"letters",jerusalem:"heartHamsa",ahava:"heartHamsa",weddingSign:"heartHamsa",mitzvahSign:"letters",treeMem:"letters"};
+
+const UNSURE={"kid": ["letters", "Most people go with Hebrew letters. Their name on the wall."], "table": ["dreidel", "Most people start with the Dreidel set for their own table."], "host": ["dreidelName", "The Dreidel set with their family name is my favorite host gift."], "teacher": ["miracle", "Miracle Coasters are the easy teacher win. A name can go on the back."], "mitzvah": ["mitzvahSign", "Most families pick the sign. It's the party piece, then their room."], "wedding": ["tree6", "Tree of Life with both names is my favorite for a couple."], "baby": ["baby", "The Baby Stats sign is the keepsake most people pick."], "home": ["heartHamsa", "A hamsa by the door is the classic new home gift."], "birthday": ["heartHamsa", "The Heart Hamsa is an easy yes, in their favorite color."], "grand": ["tree11", "The 11 inch fits up to 6 names, so every grandkid fits."]};
+const OCC={
+ table:{label:"Hanukkah, for my own table",hanukkah:true,ask:"How much would you like to spend? Are you thinking closer to $50 or closer to $100?",tiers:[["Closer to $50","dreidel"],["Closer to $100","shelf"]],why:{dreidel:"On your table all eight nights.",shelf:"A centerpiece that comes out every year."}},
+ host:{label:"Hanukkah host gift",hanukkah:true,ask:"How much would you like to spend? Are you thinking closer to $25 or closer to $50?",tiers:[["Closer to $25","miracle"],["Closer to $50","dreidelName"]],why:{miracle:"Four coasters wrap up nicely, $20.",dreidelName:"Their name on the base, on their table all eight nights."}},
+ teacher:{label:"Teacher gifts",hanukkah:true,ask:"How much would you like to spend? Are you thinking under $15 each or closer to $25?",tiers:[["Under $15 each","miracle"],["Closer to $25","doorsign"]],why:{miracle:"2 for $10 makes a sweet teacher gift.",doorsign:"$42, so this one fits a group gift best."}},
+ kid:{label:"Gift for a child",pre:"Oh, fun.",ask:"Their name in Hebrew letters, or English letters with animals?",tiers:[["Hebrew letters","letters"],["English with animals","safari"]],why:{letters:"Their name on their bedroom wall, letter by letter.",safari:"Animals cut into every letter of their name."}},
+ mitzvah:{label:"Bar or bat mitzvah",pre:"Mazel tov!",ask:"How much would you like to spend? Are you thinking around $70 for a sign or closer to $140 for a keepsake?",tiers:[["Around $70","mitzvahSign"],["Closer to $140","box"]],why:{mitzvahSign:"Their name on it, for the party and their room after.",box:"It holds the cards and memories from the day."}},
+ wedding:{label:"Wedding or engagement",pre:"Mazel tov to them.",ask:"How much would you like to spend? Are you thinking closer to $65 or closer to $90?",tiers:[["Closer to $65","weddingSign"],["Closer to $90","tree6"]],why:{weddingSign:"Their family name and est. date for their first home.",tree6:"Both their names on one piece."}},
+ baby:{label:"New baby",pre:"Mazel tov!",ask:"How much would you like to spend? Are you thinking closer to $25 or closer to $75?",tiers:[["Closer to $25","letters"],["Closer to $75","baby"]],why:{letters:"The baby's name on the nursery wall.",baby:"Name and stats, the keepsake from day one."}},
+ home:{label:"New home",ask:"How much would you like to spend? Are you thinking closer to $35 or closer to $85?",tiers:[["Closer to $35","heartHamsa"],["Closer to $85","jerusalem"]],why:{heartHamsa:"A hamsa by the door blesses a new home.",jerusalem:"Jerusalem on their wall, from day one."}},
+ birthday:{label:"Birthday",pre:"Happy birthday to them.",ask:"How much would you like to spend? Are you thinking closer to $35 or closer to $90?",tiers:[["Closer to $35","heartHamsa"],["Closer to $90","tree6"]],why:{heartHamsa:"Pretty, easy, and made in their favorite color.",tree6:"Their name in Hebrew, English, or any language."}},
+ grand:{label:"Grandparents",ask:"I'm thinking Tree of Life with every grandkid's name on it. How many grandkids?",explain:"Each grandkid's name goes on a Tree of Life. The count tells me the size. How many grandkids?",tiers:[["1 or 2","tree6"],["3 to 6","tree11"],["7 or more","HANDOFF"]],why:{tree6:"The grandkids' names on one tree.",tree11:"Every grandkid's name on one tree."}},
+ memorial:{label:"In memory of someone",memorial:true,pre:"I'm so sorry.",ask:null},
+};
+
+const log=document.getElementById("log"),chips=document.getElementById("chips"),form=document.getElementById("f"),box=document.getElementById("box"),send=document.getElementById("send");
+{const _ap=log.append.bind(log);log.append=(...n)=>{_ap(...n);_ap(chips)};_ap(chips)}
+let S={occ:null,pick:null},turns=[],sample=null,aiMode=false,busy=false;
+
+function scroll(){try{scroll0()}catch(e){try{log.scrollTop=log.scrollHeight}catch(_){}}}
+function scroll0(){const bots=log.querySelectorAll(".msg.bot");const b=bots[bots.length-1];if(!b){log.scrollTop=log.scrollHeight;return}const off=b.getBoundingClientRect().top-log.getBoundingClientRect().top-10;log.scrollTop=log.scrollTop+off}
+let lastBot="";
+function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)){if(S.occ&&UNSURE[S.occ]){const u=UNSURE[S.occ];text="Let me pick for you. "+u[1];lastBot=text;const d0=document.createElement("div");d0.className="msg bot";d0.textContent=text;log.append(d0);scroll();S.step="after";setTimeout(()=>recommend(u[0],""),0);return d0}
+    text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
+function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();aiMode&&sample?ask(label):fn()};chips.append(b)}scroll()}
+function card(key,extra){
+  if(S.rejected&&S.rejected.has(key))return;
+  const p=P[key];const c=document.createElement("div");c.className="card";
+  c.innerHTML='<div class="eyebrow">My pick for you</div><h2></h2><div class="price"></div><div class="sub"></div><div class="row"><a class="btn primary" target="_blank" rel="noopener">Order this piece</a><a class="btn ghost" target="_blank" rel="noopener">WhatsApp me</a></div><div class="note" hidden></div>';
+  c.querySelector("h2").textContent=p.name;c.querySelector(".price").textContent=p.price;c.querySelector(".sub").textContent=extra||p.custom;
+  const a=c.querySelectorAll("a");a[0].href=url(p.slug);msgLink(a[1],`Hi Melissa, I have a question about the ${p.name}. `,c.querySelector(".note"));S.shown=[key,...(S.shown||[])].slice(0,6);if(!S.lastView||S.lastView.type!=="cards"||S.lastView.fresh)S.lastView={type:"cards",keys:[]};S.lastView.keys.unshift(key);S.lastView.fresh=false;setTimeout(()=>{if(S.lastView)S.lastView.fresh=true},0);log.append(c);scroll();
+}
+
+// ---------- Copy-ahead for Message me ----------
+let lastQ="";
+function copyText(txt,note){
+  const done=()=>{note.textContent="Copied. Paste it in my chat.";note.hidden=false};
+  try{navigator.clipboard.writeText(txt).then(done,()=>{note.textContent="Copy your question above, then paste it in my chat.";note.hidden=false})}catch(e){note.textContent="Copy your question above, then paste it in my chat.";note.hidden=false}
+}
+const WA="https://api.whatsapp.com/send/?phone=16175396877&type=phone_number&app_absent=0&text=";
+function msgLink(a,txt,note){a.href=WA+encodeURIComponent(txt);note.textContent="No WhatsApp? Text (617) JEWNVRS, that's 617-539-6877, or email chai@jewniversecrafts.com";note.hidden=false}
+function pastCutoff(){return new Date()>new Date("2026-11-05T23:59:00-05:00")}
+
+function open(){
+  say("Shalom, you found the Mensch at the Desk. Not sure what to get? That's my whole job. Think of me as the aunt with great taste and zero guilt trips. I make every piece to order in my Richmond, VA studio.\nSo tell me, who are we shopping for, and what's the occasion?");
+  setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]),["Just browsing",browsing]]);
+}
+function browsing(){say("Enjoy. Shopping for yourself or a gift?");setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}
+function pickOcc(k){
+  S.occ=k;const o=OCC[k];
+  if(o.hanukkah&&pastCutoff()){say("My Hanukkah order deadline has passed. Send me a message and I'll see what I can do.");handoffBtn();return}
+  if(o.memorial){say("I'm so sorry. When do you need it?");setChips([["Within the week, for shiva",()=>{say("I can rush it with next day air. You'd cover that postage. Send me a message and I'll confirm the timing.");card("treeMem");objections()}],["For sheloshim, unveiling, or yahrzeit",()=>{recommend("treeMem","A lasting place for their name.")}]]);return}
+  say((o.pre?o.pre+" ":"")+"When do you need it in hand?");S.step="timing";
+  const hz=o.hanukkah||S.hanu;
+  setChips([["This week",()=>timing("rush")],["By early November",()=>timing("nov")],[hz?"By Hanukkah, Dec 4":"Later is fine",()=>timing(hz?"hanukkah":"later")]]);
+}
+function timing(t){
+  S.when=t;const o=OCC[S.occ];
+  const line={rush:"Every piece is made to order. Rush is free, you just pay faster postage.",nov:"Easy. Orders placed by Nov 5 ship by Nov 11.",hanukkah:"Order by Nov 5 for Hanukkah delivery.",later:"Perfect. Plenty of time to get every detail right."}[t];
+  say(line+"\n"+o.ask);S.step="tier";
+  setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]]);
+}
+function unsurePick(){const u=UNSURE[S.occ];if(!u){say("No problem. Tell me a budget and I'll pick.");return setChips([["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)]])}
+  say("No problem. "+u[1]);recommend(u[0],"");}
+function bigTree(){say("I love that. Seven or more names needs a custom layout. Send me their names and I'll get right back to you.");handoffBtn()}
+function recommend(key,why){
+  S.pick=key;S.step="after";const p=P[key];
+  let t=`I'd go with the ${p.name}, ${p.price}. ${why||""}`.trim();
+  if(key==="dreidel"||key==="dreidelName")t+=" I'm making 20 sets this year.";
+  if(key==="letters")t+=" What size, 3 inch up to 10 inch?";
+  say(t);card(key);objections();
+}
+function objections(){
+  setChips([
+   ["That's more than I wanted",objPrice],
+   ["I need to think about it",objThink],
+   ["Will it get here in time?",objTime],
+   ["What if I don't like it?",objReturn],
+   ["How is this different?",objDiff],
+   ["I'm ready to order",close],
+  ]);
+}
+function objPrice(){
+  let low=LOWER[S.pick];if(S.pick==="dreidelName")low="dreidel";
+  if(S.pick==="letters"){say("Totally fair. Smaller letters cost less. 3 inch letters are $3.99 each, so a 4 letter name is $15.96. Want that size?");setChips([["Yes, 3 inch",close],["Show me other gifts",()=>byBudget(20)]]);return}
+  if(!low){say("Totally fair. What would you like to spend? I'll find something that fits.");setChips([["About $15",()=>byBudget(15)],["About $30",()=>byBudget(30)],["About $50",()=>byBudget(50)]]);return}
+  const lp=P[low];const low2=LOWER[low];
+  const txt=S.pick==="dreidelName"?"The original set is $48, without the family name.":`The ${lp.name} is ${lp.price}.`;
+  say(`Totally fair. ${txt}${low2?` Or ${P[low2].name}, ${P[low2].price}.`:""} Or tell me your budget and I'll match it.`);
+  const ch=[[low==="dreidel"?"The $48 set":lp.name,()=>{S.pick=low;say("Good choice. "+lp.custom);card(low);closeLine()}]];
+  if(low2)ch.push([P[low2].name,()=>{S.pick=low2;say("Good choice. "+P[low2].custom);card(low2);closeLine()}]);
+  ch.push(["About $30",()=>byBudget(30)],["Keep my first pick",close]);setChips(ch);
+}
+function objThink(){say("Of course. Is it the price, the timing, or the piece?");S.step="think";setChips([["The price",objPrice],["The timing",objTime],["The piece",pieceSwap]])}
+function pieceSwap(){if(!S.occ&&!S.pick)return restart();S.step="after";S.more=0;say("No problem. Same plan, different piece. Here's what else fits.");const before=log.children.length;moreOptionsQuiet();}
+function objTime(){const p=P[S.pick];const nm=p?p.name:"my piece";const hz=(S.occ&&OCC[S.occ].hanukkah)||S.hanu;
+  if(S.when==="rush"){say(`This week is tight, and I can rush it. Rush is free, you just pay faster postage. Tap below and I'll confirm the timing for your date.`);lastQ=`I need the ${nm} this week. Can you get it to me in time?`;return handoffBtn()}
+  if(S.when==="nov")return say("Yes. Order by Nov 5 and it ships by Nov 11."),objections();
+  if(hz)return say("Yes. Order by Nov 5 for Hanukkah delivery. Need it sooner? Rush is free, you just pay faster postage."),objections();
+  say("Every piece is made to order and ships the next business day after it's done. Need it by a certain date? Rush is free, you just pay faster postage.");objections()}
+function objReturn(){say("Every piece is made for you, so sales are final. That's why you get a proof first. Nothing gets engraved until you approve it.");objections()}
+function objDiff(){const p=P[S.pick];say(`${p.custom} ${p.memorial||p.name_cta?"I send a proof before I engrave anything. ":""}It's laser cut in my Richmond studio, made to order.`);objections()}
+function close(){card(S.pick,"Tap Order this piece. Your name and spelling go in the order notes.");closeLine()}
+function closeLine(){const p=P[S.pick];say(p&&p.memorial?"Questions go straight to me.":p&&p.name_cta?"Got a name in mind? Send it my way.":"Questions go straight to me.");setChips([["Start over",restart]])}
+function handoffBtn(){const c=document.createElement("div");c.className="card";const q=lastQ?("Hi Melissa, "+lastQ):"Hi Melissa, I have a question.";c.innerHTML='<div class="eyebrow">Straight to me</div><div class="q"></div><div class="row"><a class="btn primary" target="_blank" rel="noopener">Send on WhatsApp</a></div><div class="note" hidden></div>';c.querySelector(".q").textContent=q;msgLink(c.querySelector("a"),q,c.querySelector(".note"));log.append(c);scroll();setChips([["Start over",restart]])}
+function restart(){S={occ:null,pick:null};say("Let's find the right piece. Who's it for, and what's the occasion?");setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
+
+// ---------- AI mode ----------
+const DESC={
+"custom-wood-hebrew-dreidel-set":["8 dreidel coasters, 2 each of nun, gimel, hey, shin, standing in a base engraved Menorah Latkes Dreidel Repeat","$48, or $58 with your family name on the base"],
+"personalized-hebrew-pomegranate-table-accent":["Maroon wood pomegranate napkin rings engraved Shanah Tovah, with your family name painted in gold","set of 4 $57, 6 $72, 8 $87"],
+"personalized-matzah-plate-insert":["Wood pomegranate napkin rings with a full color pomegranate print and Shana Tova cut out","set of 4 $57, 6 $72, 8 $87"],
+"colorful-hamsa-shalom-mug":["Shalom Y'all floral mug in 9 colors, dishwasher and microwave safe. Printed and shipped by my print partner","11oz $17.99, 15oz $18.99"],
+"personalized-bar-mitzvah-wood-sign-gold-star-of-david-midcentury-modern-25-colors":["Layered mid-century modern Star of David plaque, top and bottom layers in the colors you pick, engraved with their name in Hebrew or English, Torah portion, and dates. 25 background colors","6x6 $70, 9x9 $101, 11x11 $146"],
+"heart-hamsa-wall-decor-3-sizes":["A single layer of 1/8 inch wood with heart cutouts. Delicate wall art in the color you pick","about 4 inch $32, 6 inch $58, 11.5 inch $122"],
+"personalized-bar-mitzvah-keepsake-box":["Wood keepsake box with a Tree of Life or Magen David pattern, their name, Parashah, and English and Hebrew date. Holds kippot, the speech, cards, photos","$138"],
+"shanah-tovah-table-set":["Engraved challah board, pomegranate napkin rings, and an engraved honey jar, all together","$249"],
+"floral-cutout-wood-letters-az":["English letters A to Z with safari animals cut out","3 inch $5 up to 10 inch $12 per letter"],
+"am-yisrael-chai-wood-wall-art":["Layered wood, Am Yisrael Chai in Hebrew with an Israeli flag accent. You pick the letter color","$95.99"],
+"patriotic-hand-blessing-wall-art":["Layered basswood hamsa in stars and stripes, 3/8 inch thick","6 inch $80, 8 inch $100, 10 inch $125"],
+"custom-hebrew-name-cutouts-wood":["Wood Hebrew letters, each cut as its own piece. 25+ colors","3 inch $3.99 up to 10 inch $12.99 per letter"],
+"personalized-shana-tova-wood-plaque":["Challah board engraved Shana Tova with your family name or your own text, in the font you pick","$120"],
+"jerusalem-hamsa-layered-wood-art":["Layered wood Jerusalem skyline under a crescent moon, in colors you pick. Shelf sitter or framed","6x6 $83 or $107.90 framed, 8x8 $121 or $157.30, 10x10 $192 or $249.60"],
+"chai-lights-layered-wood-art-plaque":["Layered wood kiddush cup, Shabbat candles, and stars, in colors you pick. Shelf sitter or framed","6x6 $83 or $107.90 framed, 8x8 $121 or $157.30, 10x10 $191 or $248.30"],
+"shabbat-survival-kit-wine-bottle-tag":["Engraved wood bottle tag, Shabbat Survival Kit, pull cork in case of emergency. Shabbat or Chag. A name can go on the back","$10, or 2 for $18"],
+"honeycomb-star-wall-blessing":["Wood Star of David plate with Hebrew blessings, bees, and a honeycomb center. A name can be added","$75"],
+"personalized-honeycomb-smash-keepsake":["Clear hexagon glass honey jar, etched, with a wood lid and dipper. Name and date engraved","lid only $50, 1 side $57, 2 sides $65, 1 side and top $70, 2 sides and top $75"],
+"custom-heirloom-jewish-home-plaque":["Basswood sign, family name, est. date, and a small Star of David, each cut as its own piece on a wood backer. 25+ colors","12x6 $65, 16x8 $95, 16x11 $125"],
+"custom-baby-stats-name-sign-letter":["Wood letter with the baby's name painted across the front and the date, time, weight, and length engraved on the corners","6 inch $75, 10 inch $100, 12 inch $149"],
+"ahava-heart-hebrew-wood-stand-sign":["Hand-painted layered wood, Ahava in Hebrew over a heart, on a stand. About 15 by 6 inches. You pick the letter color","$92"],
+"farm-scene-alphabet-letter-cutout":["English letters A to Z with a farm scene cut out","3 inch $5 up to 10 inch $12 per letter"],
+"tree-of-life-judaica-wall-plaque":["Round layered Tree of Life with a subtle Star of David. Names and a date, or a saying, any language","6 inch $88 up to 2 names, 11 inch $113 up to 6 names"],
+"peace-love-prosperity-wall-art":["Laser cut wood wall art, teal as shown or the color you pick","6 inch $54, 8 inch $67, 11.5 inch $102"],
+"artisan-hamsa-wall-charm":["Ornate openwork hamsa with scrollwork, in the color you pick","4 inch $32, 6 inch $58, 11.5 inch $122"],
+"artisan-hamsa-scroll-wall-art":["Layered scroll pattern hamsa, 30+ colors","4 inch $32, 6 inch $58, 11.5 inch $122"],
+"personalized-hebrew-prayer-wall-plaque":["The Prayer for Israel laid out in the map of Israel, natural wood, with your family name in script","$92"],
+"shanah-tovah-hebrew-acrylic-decor":["Shana Tovah in Hebrew, cut from red, yellow, or green acrylic. 5 by 6 inches, weatherproof","$32"],
+"israel-map-wood-wall-art":["Map of Israel in basswood, hand-painted blue and white with a Star of David. Hang it or lean it","6 inch $24.99, 8 inch $34.99, 11 inch $44.99"],
+"custom-hebrew-tree-wall-art":["Hamsa with Hebrew blessing words, light, grace, love, blessing, joy, faith, peace. 33 colors","6 inch $54, 8 inch $67, 11 inch $102"],
+"birkat-habayit-hamsa-wood-wall-art":["Hamsa with the Hebrew home blessing cut out, in the color you pick","6 inch $54, 8 inch $67, 11 inch $102"],
+"lasercut-shabbat-blessing-plaque":["Layered Tree of Life with geometric Stars of David over a colored backer, with the name, parsha, and date engraved on a wood band across the center, in Hebrew or English","6x6 $70, 9x9 $101, 11x11 $146"],
+"hanukkah-miracle-wood-coaster":["Wood coaster engraved, a Hanukkah miracle would be feeling confident that you spelled Hanukkah correctly. A name can go on the back","$5, 2 for $10, 4 for $20"],
+"10-plagues-passover-seder-cover":["Printed 10 Plagues coasters for the seder table, family name optional","4 for $30, 8 for $60, 12 for $85"],
+"personalized-tree-of-life-keepsake":["12 inch hand-painted layered Tree of Life with a stained glass look backing in blue hues or tropical sunset. Names and date engraved around the edge","$190"],
+"chai-pomegranate-hanging-decor":["Red acrylic pomegranate ornament with Chag Sameach in Hebrew","$32"],
+"shabbat-shalom-engraved-serving-board":["Striped wood challah board engraved Shabbat Shalom in Hebrew or English, or your own text. Juice groove","$139"],
+"personalized-star-of-blessing-plaque":["Wood Star of David with the home blessing in Hebrew and English, hung on twine","6 inch $54, 8 inch $67, 11 inch $102"],
+"custom-hebrew-star-wood-ornament":["Gold wood Star of David napkin rings engraved Shabbat Shalom, family name optional","set of 4 $57, 6 $72, 8 $87"],
+"shana-tovah-apple-wood-decor":["Basswood apple napkin rings engraved Shana Tovah, painted red, yellow, or green, family name optional","set of 4 $64, 6 $79, 9 $95"],
+"custom-pet-portrait-wood-plaque":["Engraved portrait of their pet from your photo, name optional","5x5 $45, 6x6 $65, 8x8 $85"],
+"modern-hamsa-menorah-shadow-box":["Layered menorah, doves, and Stars of David with Hebrew Hanukkah blessings, in a black display box. You pick 6 colors","6x6 $95, 8x8 $130, 10x10 $185"],
+"blessed-home-wooden-wall-art":["House silhouette with an engraved home blessing and a layered heart","$54"],
+"tulip-welcome-door-hanger":["10 inch round with a tulip bouquet. Welcome, Shalom, or Home Sweet Home","$49"],
+"ladybug-hello-wood-door-round":["10 inch ladybug round. Hello, Shalom, or Welcome","$49"],
+"hanukkah-door-corner-welcome-sign":["Door corner sign with a menorah, dreidels, or Stars of David, in 4 color palettes","$42"],
+"wine-bottle-tag-gift-holiday-kit":["Wood bottle tag, Holiday Survival Kit or It's Wine O'Clock. A name can go on the back","$10, 2 for $18, 4 for $35"],
+"custom-monogram-name-letter-keepsake":["Large wood initial engraved with names and a date, for a shelf or desk","6 inch $38, 8 inch $58, 10 inch $78"],
+"patriotic-heart-stars-welcome-wreath":["Red, white, and blue layered wreath. Welcome, Shalom, or your family name","8 inch $49, 10 inch $69"],
+"personalized-magen-david-wood-art-plaque":["Geometric Magen David plaque, 4 styles and 4 colors, with your text in English, Hebrew, or both","$89"],
+"wood-pesach-place-card-passover":["Wood napkin ring with Pesach in Hebrew","$6, 6 for $25, 12 for $50"],
+"filigree-star-of-david-wall-art":["Layered filigree Star of David in a dark wood frame","6 inch $52, 8 inch $85, 10 inch $125"]
+};
+const RULES=`You are the AI sales assistant for Jewniverse Crafts, speaking as Melissa Krumbein in first person ("I", "my", never "we"). Solo maker in Richmond, VA. Laser cut and laser engraved Judaica, made to order.
+VOICE: bestie warm, still clear on price, dates and policy. 2 to 4 short sentences, 12 words max each. Answer the question first, then one next step. At most one question per message. Contractions. No em dashes, no emojis, no hashtags, no double exclamation points. Never say handmade, hand engraved, curated, bespoke, artisanal, elevated, unique, or "personalized" alone (name what gets engraved). Never say "limited time", "act now", "last chance".
+DISCOVERY: open-ended ask -> ask "Who's it for, and what's the occasion?" Then timing (when they need it in hand), then budget as two anchors ("Closer to $50, or closer to $100?"). Skip anything already answered. Direct question -> answer it first, then ask the one missing thing.
+RECOMMEND: three beats. What I recommend (one product, one price). Why it fits (repeat their occasion/person/budget, no invented features). What to do next (one action). If two fit, offer two prices. Memorial gets ONE piece.
+OBJECTIONS: agree ("Totally fair." / "Of course."), one true fact or the next lower listed option, one question or next step. Never discount or offer codes. Never knock another seller. Never say "but", "actually", "to be honest". "I need to think about it" -> "Of course. Is it the price, the timing, or the piece?"
+CLOSE with "Got a name in mind? Send it my way." when starting an engraved order, otherwise "Questions go straight to me." Memorial uses only "Questions go straight to me."
+CATALOG (key: product, price, notes):
+dreidel: Hanukkah Dreidel Coaster Set, $48 original base, $58 family name on the base. 8 dreidel coasters (2 each nun, gimel, hey, shin) stand in a square base engraved "Menorah Latkes Dreidel Repeat". Not a box or container, no gift box. I'm making 20 sets this year. Order by Nov 5.
+miracle: Hanukkah Miracle Coasters, $5, 2 for $10, 4 for $20. Best teacher gift. A name can go on the back.
+doorsign: Hanukkah Door Corner Welcome Sign, $42.
+shelf: Hanukkah Layered Wood Shelf Sitter, $95 (6x6), $130 (8x8), $185 (10x10).
+winetag: Shabbat or Chag Survival Kit wine bottle tag, $10-$18. Add-on. A name can go on the back.
+mitzvahSign: Mid-Century Modern Star of David (bar/bat mitzvah plaque), layered, customer picks the colors for the top and bottom layers, 25+ colors, from $70. For a couple call it "the Star of David sign": their names and wedding date, same price.
+box: Bar Mitzvah Keepsake Box, $138.
+mitzvahTree (same layered plaque as mitzvahSign, same sizes and prices, different design): Tree of Life (bar/bat mitzvah plaque), layered Tree of Life with geometric Stars of David, customer picks the colors for the top and bottom layers. Name, parsha, and date engraved on a wood band across the center, Hebrew or English. 6x6 $70, 9x9 $101, 11x11 $146.
+weddingSign: Jewish Wedding Sign, family name and est. date, from $65.
+baby: Baby Stats Name Sign, from $75. For a couple call it "the name and date sign": names and wedding date, same price.
+letters: Custom Hebrew Letter Cutouts, per letter by size. 3in $3.99, 4in $4.99, 5in $6.99, 6in $8.99, 7in $9.99, 8in $10.99, 9in $11.99, 10in $12.99. Always ask the size. Top seller. LOOK: wood Hebrew letters, each cut as a separate piece. Customer picks the name and layout, then arranges, frames, or mounts them. Used on welcome tables, photo backdrops, shadow boxes, nursery walls. Size and number of letters set the price. 25+ colors, same price, chosen at checkout in a second question using the two color chart photos on the listing. This listing is Hebrew letters only.
+ENGLISH LETTERS: only themed English letters exist, with animals cut out of the letter. safari: Safari Animals Cutout Wood Letters, A to Z, from $5 per letter. farm: Farm Scene Alphabet Letter Cutout, A to Z, from $5 per letter. Dinosaur letters also exist; send a message to order those. Plain English letters (no animals) do not exist yet, so they are a maybe, hand off. Themed letters fit a kid's room or nursery.
+heartHamsa: Heart Hamsa Wall Decor, from $32, 3 sizes. Color only, never engraved.
+jerusalem: Jerusalem Hamsa Layered Wood Art, from $83. Border can be engraved.
+tree: Tree of Life Wall Art. 6in $88 up to 2 names. 11in $113 up to 6 names. Names, a date, a date range, any language incl. Hebrew. 7+ names is a maybe. Ask name count first. Never add names to a finished piece later.
+keepsake: Tree of Life Keepsake, $190. Hand-painted layered Tree of Life with their names and date engraved around the edge. Wedding, anniversary, grandparents.
+ahava: Ahava Heart Hebrew Stand Sign, $92, about 15in wide, hand-painted, letter color only, never names.
+honeyplate: Honey Plate with Blessing, $75.
+MORE PRODUCTS (answer from these, no BUY marker, point to the shop with [[DM]] only if asked for a link): ${Object.entries(DESC).map(([s,[d,p]])=>s.replace(/-/g," ")+": "+d+". "+p).join(" | ")}
+LOOKS: when asked how something looks, describe only what this catalog says, then point to the photos on the listing with [[BUY:key]]. Never invent colors, finishes, or materials.
+mug: Shalom Y'all mug $17.99. tote: Chopped Liver tote $36.99. Print partner ships these, no delivery date promised.
+MATCHES: host gift -> dreidel family name $58. Own Hanukkah table -> dreidel, or shelf. Teacher -> miracle. Bar/bat mitzvah -> mitzvahSign or box. Wedding/engagement -> weddingSign, tree 6in with names, ahava, or the name and date sign. New baby -> baby or letters. New home -> heartHamsa or jerusalem. Birthday -> heartHamsa or tree 6in with her name. Grandparents -> tree sized by grandkid count. Memorial -> open "I'm so sorry.", tree 6in with name and dates, or Hebrew letters; no mazel tov, no banter, no exclamation points. Under $25 -> letters, miracle, wine tag, mug.
+POLICIES: made to order, nothing in stock. Free US shipping. Ships next business day after the piece is done. Every engraved order gets a proof first. All sales final, no returns; damaged in transit is replaced free. Rush always available, no rush fee, customer pays faster postage; never promise an arrival date. International by request, customer pays actual postage and customs. Care: wood, dry cloth only; boards hand wash and mineral oil; nothing is dishwasher safe. Some listing photos are AI images and the listing says so.
+CALENDAR: today is ${new Date().toDateString()}. Last order date for Hanukkah and for anything needed before December is Nov 5. Orders ship by Nov 11. Orders placed Nov 6-30 ship in December. Hanukkah starts evening Dec 4. After Nov 5 for Hanukkah is a hand off. PRIVACY: never give a reason for the schedule or talk about my whereabouts. State the dates only. If asked why, say "That's my production schedule."
+QUESTIONS vs REQUESTS: a question about how something looks, its size, material, or details is a question. Answer it from the catalog. If the catalog doesn't cover it, say "Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in." and add [[DM]]. Say "I love that idea" ONLY when the customer asks for something custom or not listed. Never answer a question with "I love that idea".
+YES / MAYBE: yes only when the catalog above says so. Everything else (custom wording, extra names, sizes or colors not listed, discounts, bundles, bulk, wholesale, custom designs, anything damaged or upset, any question the catalog doesn't answer) is a maybe: say "I love that idea. Send me a message and I'll get right back to you." and add [[DM]]. Never hint it will be yes. Never guess a price.
+MARKERS (the page turns these into buttons; put each on its own line at the very end):
+[[BUY:key]] when you recommend a product, using the catalog key (dreidel, miracle, doorsign, shelf, winetag, mitzvahSign, mitzvahTree, box, weddingSign, baby, letters, safari, farm, heartHamsa, jerusalem, tree, keepsake, ahava, honeyplate, mug, tote). Only one per message.
+[[DM]] for any hand off.
+[[CHIPS:reply one|reply two|reply three]] up to 4 short replies the customer might tap next, in the customer's voice.
+Plain text only, no markdown.`;
+P.mitzvahTree={name:"Tree of Life",price:"from $70",slug:"lasercut-shabbat-blessing-plaque",custom:"A layered bar/bat mitzvah plaque with a Tree of Life and geometric Stars of David. Their name, parsha, and date are engraved on a wood band across the center, in Hebrew or English. You pick the colors for the top and bottom layers. 6x6 $70, 9x9 $101, 11x11 $146.",name_cta:true};
+P.honeyplate={name:"Honey Plate with Blessing",price:"$75",slug:"honeycomb-star-wall-blessing",custom:"Hebrew blessings, bees, and a honeycomb center. A name can be added."};
+P.tote={name:"Chopped Liver Tote",price:"$36.99",slug:"hebrew-chopped-liver-tote-bag",custom:"Printed and shipped by my print partner."};
+P.tree={name:"Tree of Life Wall Art",price:"$88 for 6 inch, $113 for 11 inch",slug:"tree-of-life-judaica-wall-plaque",custom:"Names and dates, any language.",name_cta:true};
+
+function historyTurns(){
+  // seed the AI with what the guided flow already showed
+  const t=[];for(const el of log.children){if(!el.classList.contains("msg")||el.classList.contains("thinking"))continue;const role=el.classList.contains("me")?"user":"assistant";const c=el.textContent.trim();if(!c)continue;if(t.length&&t[t.length-1].role===role)t[t.length-1].content+="\n"+c;else t.push({role,content:c})}
+  return t.slice(-20);
+}
+async function ask(text){
+  busy=true;send.disabled=true;chips.replaceChildren();
+  if(!aiMode){aiMode=true;turns=historyTurns();if(turns.length&&turns[turns.length-1].role==="user"&&turns[turns.length-1].content===text)turns.pop()}
+  turns.push({role:"user",content:text});
+  const b=say("Thinking...");b.classList.add("thinking");
+  try{
+    const {text:out}=await sample([{role:"user",content:RULES},...turns.slice(-20)],{cache:false,modelTier:"quick",onText:({text})=>{b.classList.remove("thinking");b.textContent=clean(text).body||"..."}});
+    turns.push({role:"assistant",content:out});
+    const r=clean(out);b.textContent=r.body;
+    if(r.buy&&P[r.buy]){S.pick=r.buy;card(r.buy)}
+    if(r.dm)handoffBtn();
+    if(r.chips.length)setChips(r.chips.map(c=>[c,()=>localAnswer(c)]));
+  }catch(e){
+    b.classList.remove("thinking");
+    if(e&&e.code==="not_granted"||e&&e.code==="sampling_disabled"||e&&e.code==="capability_disabled"){b.remove();aiMode=false;sample=null;localAnswer(text)}
+    else if(e&&e.code==="cancelled"){b.textContent=e.text||""}
+    else{b.textContent=(e&&e.text)||"That didn't go through. Try sending it again.";}
+  }finally{busy=false;send.disabled=false;box.focus()}
+}
+function clean(s){
+  const buy=(s.match(/\[\[BUY:([A-Za-z]+)\]\]/)||[])[1];
+  const dm=/\[\[DM\]\]/.test(s);
+  const cm=(s.match(/\[\[CHIPS:([^\]]*)\]\]/)||[])[1];
+  const body=s.replace(/\[\[[^\]]*\]\]?/g,"").replace(/\[\[[^\]]*$/,"").trim();
+  return {body,buy,dm,chips:cm?cm.split("|").map(x=>x.trim()).filter(Boolean).slice(0,4):[]};
+}
+
+
+// ---------- Budget matching ----------
+const N={mitzvahTree:70,keepsake:190,dreidel:48,dreidelName:58,miracle:10,doorsign:42,shelf:95,winetag:10,mitzvahSign:70,box:138,weddingSign:65,tree6:88,tree11:113,treeMem:88,tree:88,letters:4,safari:5,farm:5,baby:75,heartHamsa:32,jerusalem:83,ahava:92,mug:18,honeyplate:75,tote:37};
+const POOL={kid:["safari","farm","letters"],table:["miracle","doorsign","dreidel","dreidelName","shelf"],host:["winetag","miracle","doorsign","dreidel","dreidelName","shelf"],teacher:["miracle","winetag","mug","doorsign"],mitzvah:["letters","heartHamsa","mitzvahSign","mitzvahTree","box"],wedding:["heartHamsa","weddingSign","tree6","ahava","tree11","keepsake"],baby:["safari","letters","heartHamsa","baby"],home:["heartHamsa","jerusalem","ahava"],birthday:["mug","tote","heartHamsa","tree6","ahava"],grand:["keepsake","jerusalem","ahava","heartHamsa","tree6","tree11"],memorial:["letters","treeMem"]};
+const ANY=["miracle","winetag","mug","heartHamsa","tote","doorsign","dreidel","weddingSign","baby","tree6","ahava","box"];
+const HANUKKAH_OCC=["table","host","teacher"];
+function parseBudget(t){const m=t.match(/\$\s*(\d{1,4})|(\d{1,4})\s*(\$|dollars|bucks)|(?:spend|budget|around|about|under|less than|max|up to|closer to)\s*\$?\s*(\d{1,4})/);if(!m)return null;const n=+(m[1]||m[2]||m[4]);return n>0?n:null}
+function byBudget(b){
+  const occ=S.occ;const hanukkah=HANUKKAH_OCC.includes(occ)||(S.pick&&/dreidel|miracle|doorsign|shelf/.test(S.pick));
+  if(hanukkah&&b>=25&&b<=40){
+    say(`Totally doable. Around $${b}, I'd pair Hanukkah Miracle Coasters, 4 for $20, with a Survival Kit wine tag, $10. I can put their name on the back of both. About $30 together.`);
+    S.pick="miracle";card("miracle");card("winetag");objections();return;
+  }
+  const pool=(occ&&POOL[occ])||(hanukkah?POOL.host:ANY);
+  let fit=pool.filter(k=>N[k]<=b*1.1).sort((a,c)=>N[c]-N[a]);
+  const seen=new Set();fit=fit.filter(k=>{const n=P[k].name;if(seen.has(n))return false;seen.add(n);return true}).slice(0,2);
+  if(!fit.length){const low=[...pool].sort((a,c)=>N[a]-N[c])[0];say(`My closest pick is the ${P[low].name}, ${P[low].price}.`);S.pick=low;card(low);objections();return}
+  const [a,c]=fit;
+  say(`Totally doable. Around $${b}, I'd go with the ${P[a].name}, ${P[a].price}.`+(c?` Or the ${P[c].name}, ${P[c].price}.`:"")+(c?" Which feels right?":" Want that one?"));
+  S.pick=a;card(a);if(c)card(c);objections();
+}
+
+// ---------- Typed questions without AI (works for every viewer) ----------
+const has=(t,...w)=>w.some(x=>t.includes(x));
+function localAnswer(raw){try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
+function localAnswer0(raw){
+  let t=" "+raw.toLowerCase().replace(/[^a-z0-9$' ]/g," ")+" ";
+  t=t.replace(/ (dreidles?|driedels?|dreidl|dreidls|draydels?|dredels?|dridels?) /g," dreidel ").replace(/ (hamsah|hamza|chamsa) /g," hamsa ").replace(/ (chanukah|chanukkah|hannukah|hanukah|hannukkah) /g," hanukkah ");
+  const pick=S.pick&&P[S.pick];
+  const same=k=>S.occ===k;
+  if(has(t,"don't like","dont like","not a fan","hate the","not into","not the ","no to the")){
+    S.rejected=S.rejected||new Set();
+    const nm=k=>P[k].name.toLowerCase();
+    for(const k of Object.keys(P)){const w=nm(k).split(" ").slice(0,2).join(" ");if(t.includes(w.toLowerCase())||(S.pick&&P[S.pick].name===P[k].name))S.rejected.add(k)}
+    if(S.pick)for(const k of Object.keys(P))if(P[k].slug===P[S.pick].slug)S.rejected.add(k);
+  }
+  if(has(t," quote on"," quote for","a quote","get a quote","price quote","custom quote","quote me","pricing on each","price on each","price each")&&!has(t,"bar quote","quote coaster")){say("Happy to. I'll quote that for you myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn()}
+  if(has(t,"can you make","could you make","can you do","could you do","make me","make one","can you create","custom design","custom order","custom piece","something custom")){
+    say("I love that idea. Tap below, your request is already typed for me.");return handoffBtn();
+  }
+  if(has(t,"no budget","don't have a budget","dont have a budget","not have a budget","any budget","money is no","price doesn't matter","price doesnt matter","doesn't matter","doesnt matter","not worried about price")){
+    if(S.lastCat&&S.lastCat.length){const L=S.lastCat;const lo=Math.min(...L.map(x=>x[2])),hi=Math.max(...L.map(x=>x[2]));say(`No problem, then let's go by what you love. Here are all of them. The smallest sizes run from $${lo} to $${hi}. Tap one to see every size.`);listCard("From my shop",L.slice(0,16));return after()}
+    const pool=((S.occ&&POOL[S.occ])||ANY).filter(k=>P[k]&&!(S.rejected&&S.rejected.has(k)));const top=[...pool].sort((a,c)=>N[c]-N[a]).slice(0,2);
+    say(`No problem, then let's go by what they'll love. My showstopper for this is the ${P[top[0]].name}, ${P[top[0]].price}.`+(top[1]?` Or the ${P[top[1]].name}, ${P[top[1]].price}.`:""));S.pick=top[0];for(const k of top)card(k);return objections()}
+  {const wearQ=has(t,"wear","shirt","tee ","tees","hoodie","sweatshirt","apparel","clothes","clothing","onesie","outfit"," hat"," cap "," caps ");const kidQ=has(t,"child","children","kid","kids","youth","toddler","baby","babies","boy","girl","son","daughter","grandkid","teen");
+  if(wearQ&&kidQ){say("My shirts and hoodie come in adult sizes only, starting at XS. For a child, I'd go with their name in wood letters for their room. Want kid sizes? Send me a WhatsApp and I'll see what I can do.");S.occ="kid";S.pick="letters";card("letters");card("safari");lastQ="Do you have any shirts or hoodies in kids' sizes?";handoffBtn();return}}
+  if(has(t,"jewelry","jewellery","necklace","bracelet","earring","pendant")){const w=CAT.filter(([n])=>/tee|t-shirt|hoodie|cap|hat/i.test(n));say("I don't make jewelry. For something to wear, I have tees, a hoodie, and caps. These are printed and shipped by my print partner.");listCard("Printed and shipped for you",w.slice(0,16));S.lastCat=w;return after()}
+  {const ch=catSearch(t);if(ch.length>1&&ch.length<40&&has(t,"what else","anything else","other","more","like","love","show me"))return catAnswer(t)}
+  const SIB={mitzvahSign:["mitzvahTree","box"],mitzvahTree:["mitzvahSign","box"],box:["mitzvahSign","mitzvahTree"],weddingSign:["tree6","keepsake","ahava"],tree6:["keepsake","tree11"],tree11:["keepsake","tree6"],treeMem:["letters"],keepsake:["tree11","tree6"],baby:["letters","safari"],letters:["safari","farm"],safari:["farm","letters"],farm:["safari","letters"],dreidel:["miracle","shelf"],dreidelName:["dreidel","shelf"],shelf:["doorsign","dreidel"],doorsign:["shelf","miracle"],miracle:["winetag","dreidel"],winetag:["miracle"],jerusalem:["heartHamsa","ahava"],ahava:["heartHamsa","jerusalem"]};
+  if(S.pick&&has(t,"other design","other style","different design","different style","another design","another style","other version","other look","other ones","other kind","other option","other choice","similar","like this","like that")){
+    if(S.pick==="heartHamsa"||S.pick==="jerusalem"&&has(t,"hamsa")){const hs=catSearch(" hamsa ");say("Here are all my hamsa designs. Tap one to see every size and color.");listCard("From my shop",hs);S.lastCat=hs;return after()}
+    const sib=(SIB[S.pick]||[]).filter(k=>P[k]&&!(S.rejected&&S.rejected.has(k)));
+    if(sib.length){say(`Yes. Here are my other designs like the ${P[S.pick].name}.`);const first=S.pick;for(const k of sib)card(k);S.pick=sib[0];return objections()}
+  }
+  if(has(t,"anything else","what else","any other","other design","other designs","something else","other option","other gift","more option","show me more","other ideas","what other","else do you","alternatives"," others "))return moreOptions();
+  if(S.occ==="memorial"&&has(t,"memorial","how is","why","remember","honor")&&S.pick){
+    if(S.pick==="letters")return say("Their Hebrew name, letter by letter, framed or mounted where you'll see it every day. A quiet way to keep their name close."),after();
+    if(S.pick==="treeMem"||S.pick==="tree6")return say("Their name and dates on a Tree of Life, a symbol of roots and family. It keeps their memory in your home."),after();
+  }
+  if(has(t,"english")&&(S.pick==="letters"||S.occ==="memorial"||!has(t,"letter"))&&!has(t,"hebrew or english","english or hebrew")){
+    if(S.occ==="memorial"&&S.rejected&&S.rejected.has("treeMem")){say("My English letters have animals cut into them, so they're not right for this. Tap below and let's talk about what would feel right.");return handoffBtn()}
+    if(S.occ==="memorial"){say("My English letters have animals cut into them, so they're not right for this. For a memorial in English, I'd go with the Tree of Life. Their name and dates in English, $88.");S.pick="treeMem";card("treeMem");return after()}
+    if(S.pick==="letters"||has(t,"letter","name","alphabet")){say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a WhatsApp.");S.pick="safari";card("safari");card("farm");closeLine();return}
+  }
+  if(S.lastIntent==="compare"&&/^ (no|nope|i meant|i mean)/.test(t)){const h=catSearch(t);if(h.length>1)return compareItems(h.slice(0,4))}
+  if(has(t,"difference","differ","compare"," vs ","versus","which one","which is better")&&(S.shown||[]).length>1){
+    const NOUN={plaque:["plaque","sign"],plaques:["plaque","sign"],sign:["sign","plaque"],signs:["sign","plaque"],box:["box"],tree:["tree"],trees:["tree"],letter:["letter"],letters:["letter"],coaster:["coaster"],coasters:["coaster"],hamsa:["hamsa"],hamsas:["hamsa"]};
+    let ws=[];for(const w of t.split(" "))if(NOUN[w])ws.push(...NOUN[w]);
+    const seen=new Set();const sh=(S.shown||[]).filter(k=>P[k]&&!seen.has(P[k].name)&&seen.add(P[k].name));
+    const fk=ws.length?sh.filter(k=>ws.some(w=>(P[k].name+" "+P[k].custom).toLowerCase().includes(w))):sh;
+    const refersShown=has(t," the 2 "," the two ","both","these","those"," them ","this one","that one")||fk.length>1;
+    if(refersShown&&fk.length>1&&fk.includes("mitzvahSign")&&fk.includes("mitzvahTree")){lastBot="";say("They're the same layered plaque in two designs. Same sizes and prices, 6x6 $70, 9x9 $101, 11x11 $146. Both carry their name, parsha, and date.\nOne is the Mid-Century Modern Star of David.\nThe other is the Tree of Life, with geometric Stars of David and the name on a wood band across the center.\nOn both, you pick the colors for the top and bottom layers.\nWhich design is catching your eye?");S.lastIntent="compare";return setChips([["Mid-Century Modern Star of David",()=>{S.pick="mitzvahSign";say("Great pick. "+P.mitzvahSign.custom);card("mitzvahSign");closeLine()}],["Tree of Life",()=>{S.pick="mitzvahTree";say("Great pick. "+P.mitzvahTree.custom);card("mitzvahTree");closeLine()}]])}
+    if(refersShown&&fk.length>1){const ks=fk.slice(0,3);lastBot="";say("Here's the quick difference.\n"+ks.map(k=>`${P[k].name}, ${P[k].price}. ${P[k].custom}`).join("\n")+"\nWhich one is catching your eye?");S.lastIntent="compare";return setChips(ks.map(k=>[P[k].name,()=>{S.pick=k;say("Great pick. "+P[k].custom);card(k);closeLine()}]))}
+  }
+  if(has(t,"difference","differ","compare"," vs ","versus")&&!has(t,"between them","between these","these two","those two")){const h2=catSearch(t);if(h2.length>1)return compareItems(h2.slice(0,4))}
+  if(glossAnswer(t))return;
+  if(has(t,"each one","difference","differ","compare","which one","which is better"," vs ","versus","between them","between these")&&compareShown())return;
+  if(has(t,"layered","made of","material"," thick"," thin ","thinner","flimsy","sturdy","fragile","delicate","how heavy","what kind of wood","is it wood","are they wood","all wood","plastic","acrylic")&&materialShown())return;
+  const HANU=/c?h+an+[aeiu]*k+[aeiu]*k*[aeiu]*h?/.test(t);
+  if(HANU)S.hanu=true;
+  if(has(t,"this week","tomorrow","few days","by friday","by the weekend","asap","right away"))S.when="rush";
+  const isQ=/\?/.test(raw)||/^ (how|what|can|do|does|is|are|will|why|where|who) /.test(t)||has(t," do you "," can you "," can i "," is it "," is there "," are there "," do they "," does it "," ahve "," have it "," come in ");
+  if(S.pick&&has(t,"why would","doesn't make sense","doesnt make sense","not for a","weird","makes no sense")){
+    if(S.occ==="kid"){const o=OCC.kid;say("Fair point. For a child, their name on the wall wins. "+o.ask);S.step="tier";setChips(o.tiers.map(([l,k])=>[l,()=>recommend(k,o.why[k])]));return}
+    say("Fair point. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
+  }
+  if(S.step==="timing"&&!isQ){
+    let k=null;
+    if(has(t,"asap","this week","tomorrow","few days","right away","soon"," now "))k="rush";
+    else if(HANU||has(t,"december","dec ","christmas","holiday"))k=(OCC[S.occ].hanukkah||S.hanu)?"hanukkah":"later";
+    else if(has(t,"october","oct ","november","nov "))k="nov";
+    else if(has(t,"not sure","no rush","later","whenever","january","february","march","spring","next year"))k="later";
+    if(k){S.step=null;return timing(k)}
+  }
+  const CLAR=t.length<45&&!(catSearch(t).length&&has(t,"about","have","do you","any "))&&(has(t,"for what","what for","what do you mean","meaning","huh","why do you","why?","what?","explain","confused"," what ")||/^ (why|what|huh|meaning) $/.test(t));
+  if(S.step==="timing"&&CLAR){say("So I know it gets there in time. When's the big day?");return setChips([["This week",()=>timing("rush")],["By early November",()=>timing("nov")],["By Hanukkah, Dec 4",()=>timing("hanukkah")],["Not sure",()=>timing("later")]])}
+  if(S.step==="tier"&&CLAR){const o=OCC[S.occ];say(o.explain||("So I can pick the right piece at the right price for you. "+o.ask));return setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]])}
+  if(S.step==="tier"&&has(t,"not sure","dont know","don't know","idk","no idea","unsure","you pick","you choose","surprise me","whatever","either","no clue")){
+    return unsurePick();
+  }
+  if(S.step==="tier"&&S.occ==="grand"){const m=t.match(/ (\d{1,2}) |(one|two|three|four|five|six|seven|eight|nine|ten)/);
+    if(m){const W={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10};const n=m[1]?+m[1]:W[m[2]];
+      S.count=n;if(n<=2)return recommend("tree6",`Room for ${n===1?"their name":"both names"} on the 6 inch.`);if(n<=6)return recommend("tree11",`All ${n} names fit on the 11 inch.`);return bigTree();}}
+  if(S.step==="tier"&&!isQ){
+    const o=OCC[S.occ];const b=parseBudget(t);
+    if(b){S.step=null;return byBudget(b)}
+    for(const [label,key] of o.tiers){const words=label.toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").filter(w=>w.length>2&&!["closer","around","each","under"].includes(w));
+      if(words.some(w=>t.includes(" "+w)))return key==="HANDOFF"?bigTree():recommend(key,o.why[key]);}
+    if(catAnswer(t))return;
+    return say("Got it. "+o.ask),setChips(o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]));
+  }
+  if(S.step==="think"){if(has(t,"piece","item","product","design","style","look"))return pieceSwap();if(has(t,"price","cost","money","budget","expensive"))return objPrice();if(has(t,"timing","time","date","when","deadline"))return objTime();}
+  if(S.pick&&!isQ||S.pick&&has(t,"more than","expensive","think about","in time","return","don't like","dont like","different","ready","order it","buy")){
+    if(S.pick==="letters"){const m=t.match(/(\d{1,2})\s*(inch|in |"|”)/)||t.match(/ (\d{1,2}) /);const sz=m&&+m[1];const L={3:3.99,4:4.99,5:6.99,6:8.99,7:9.99,8:10.99,9:11.99,10:12.99};
+      if(sz&&L[sz]){say(`${sz} inch letters are $${L[sz]} each. A 4 letter name is $${(L[sz]*4).toFixed(2)}. Pick one of 25+ colors at checkout.`);card("letters");closeLine();return}}
+    if(has(t,"more than","too much","expensive","cheaper"," less "," lower "))return objPrice();
+    if(has(t,"think about","not sure","maybe later"))return objThink();
+    if(has(t,"in time","get here","arrive"))return objTime();
+    if(has(t,"return","don't like","dont like","refund"))return objReturn();
+    if(has(t,"different","amazon","why yours","why you"))return objDiff();
+    if(has(t," ready","order it","buy it","i'll take","ill take"," yes "))return close();
+  }
+  // policies and FAQ first
+  const bud=parseBudget(t);
+  if(bud&&!has(t,"ship","postage"))return byBudget(bud);
+  if(has(t,"personaliz","personalis","customiz","engrave","add a name","name on","put a name","their name","monogram")&&!has(t,"letter"))return persAnswer();
+  if(has(t,"discount","coupon"," code "," sale "," deal "," promo"))return say("I don't run codes. Every order gets free US shipping and a proof before I engrave."),after();
+  if(has(t,"return","refund","exchange"))return objReturn();
+  if(has(t,"proof"))return say("Yes. You get a proof to approve before I engrave anything."),after();
+  if(has(t," rush","hurry","asap","overnight","next day"))return say("Rush is always free. You just pay faster postage. Send me a message and I'll confirm timing."),handoffBtn();
+  if(has(t,"canada","israel","international","overseas","uk ","england","australia")&&(has(t,"ship","send","deliver","mail","postage"," to ","abroad")||!catSearch(t).length))return say("Yes, I ship abroad. You cover actual postage plus any customs. Send me a message with your country."),handoffBtn();
+  if(has(t,"dishwasher","clean"," care "," wash "))return say("Wood gets a dry cloth only, no water. Boards get hand washed and oiled. Nothing goes in the dishwasher."),after();
+  if(has(t,"handmade","hand made","made in","where is it made","who makes"))return say("I design every piece and laser cut it in my Richmond studio. Made to order."),after();
+  if(has(t," ship ","shipping"," ships ","deliver","arrive","in time","how long","when will"))return objTime();
+  if(has(t,"custom","my own design","my idea","logo","bulk","wholesale"))return say("I love that idea. Send me a message and I'll get right back to you."),handoffBtn();
+  // letters
+  if(has(t,"letter","alphabet","abc","initial","monogram")){
+    if(has(t,"english","abc","alphabet","initial","monogram"," a z ")){
+      say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a message.");
+      S.pick="safari";card("safari");card("farm");closeLine();return;
+    }
+    if(has(t,"color","colour"))return say("More than 25 colors, same price. You pick from the color charts on the listing at checkout."),after();
+    if(has(t,"look","picture","photo","what are","like"))return say("Wood Hebrew letters, each cut as its own piece. You arrange, frame, or mount them. The listing photos show them best."),(S.pick="letters",card("letters"),after());
+    return recommend("letters","");
+  }
+  if(has(t,"color","colour")&&!has(t,"favorite","favourite")&&(!pick||["letters","heartHamsa","ahava","mitzvahSign"].includes(S.pick))){
+    if(pick)return say(pick.custom+" The listing photos show the options."),after();
+    return say("Most pieces come in lots of colors. Which piece are you looking at?"),after();
+  }
+  if(has(t,"look like","looks like","picture","photo","see it","what does"))return pick?(say("The listing photos show it best."),card(S.pick),after()):(say("Which piece are you curious about? I'll show you."),after());
+  if(catSearch(t).length>1&&catAnswer(t))return;
+  // products by name
+  const prod=[["dreidel","dreidel"],["coaster set","dreidel"],["miracle","miracle"],["door","doorsign"],["shelf","shelf"],["menorah","shelf"],["wine","winetag"],["keepsake box","box"],["tree of life","tree"],["ahava","ahava"],["jerusalem","jerusalem"],["hamsa","heartHamsa"],["wedding sign","weddingSign"],["baby stats","baby"],["name sign","baby"],["honey plate","honeyplate"],["mug","mug"],["tote","tote"],["mitzvah sign","mitzvahSign"]];
+  for(const [w,k] of prod)if(t.includes(w))return recommend(k,"");
+  // occasions
+  const occ=[["table","table"],[" host","host"],["teacher","teacher"],["mitzvah","mitzvah"],["bnai","mitzvah"],["wedding","wedding"],["engag","wedding"],["anniversary","wedding"],["baby","baby"],["newborn","baby"],["nursery","baby"],["housewarming","home"],["new home","home"],["new house","home"],["birthday","birthday"],["grand","grand"],["memorial","memorial"],["shiva","memorial"],["passed","memorial"],["yahrzeit","memorial"],["unveiling","memorial"],["loss","memorial"]];
+  for(const [w,k] of occ)if(t.includes(w)&&!same(k))return pickOcc(k);
+  const KID=["child"," kid "," kids "," son ","daughter","grandson","granddaughter","niece","nephew","toddler"," boy"," girl","teen","little one"];
+  const GRANDP=["grandparent","grandma","grandpa","bubbe","savta","zayde","saba","grandmother","grandfather","grandkids names"];
+  if(has(t,...GRANDP)&&!same("grand"))return pickOcc("grand");
+  if(has(t,...KID)&&!same("kid"))return pickOcc("kid");
+  if(HANU){
+    if(has(t," host","hostess","dinner","party"))return pickOcc("host");
+    if(has(t,"teacher"))return pickOcc("teacher");
+    if(has(t,"table","my home","our home","myself","for me","for us"))return pickOcc("table");
+    return say("Happy Hanukkah. Who's it for?"),setChips([["My own table",()=>pickOcc("table")],["A host",()=>pickOcc("host")],["A child",()=>pickOcc("kid")],["A teacher",()=>pickOcc("teacher")]]);
+  }
+  if(has(t,"gift","present","something for"))return say("Oh, fun. Who's it for, and what's the occasion?"),setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]));
+  if(has(t,"price","cost","how much")&&catSearch(t).length&&catSearch(t).length<4&&catAnswer(t))return;
+  if(has(t,"price","cost","how much","expensive","cheap","budget"))return pick?objPrice():(say("Pieces start at $5. Who's it for, and what's the occasion?"),setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])));
+  if(catAnswer(t))return;
+  if(!isQ&&S.pick){say(S.pick==="letters"?"Perfect. What size letters, 3 inch up to 10 inch?":"Got it. Ready to order, or want to see something else?");return after()}
+  if(!isQ&&S.step==="tier"&&S.occ){const o=OCC[S.occ];say("Got it. "+o.ask);return setChips(o.tiers.map(([l,k])=>[l,()=>k==="HANDOFF"?bigTree():recommend(k,o.why[k])]))}
+  say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();
+}
+const COLOR_ONLY=["heartHamsa","ahava"];
+function persAnswer(){
+  const keys=(S.shown&&S.shown.length?S.shown:(S.pick?[S.pick]:[]));
+  if(!keys.length){say("Lots of my pieces carry a name or date. Signs, plaques, boards, Tree of Life, and the Dreidel set. Who's it for?");after();return}
+  const yes=[],color=[],ask=[];
+  for(const k of keys){const p=P[k];if(p.name_cta||p.memorial)yes.push(p.name);else if(COLOR_ONLY.includes(k))color.push(p.name);else ask.push(p.name)}
+  const parts=[];
+  if(yes.length)parts.push(`Yes on the ${yes.join(" and the ")}. ${P[keys.find(k=>P[k].name===yes[0])].custom}`);
+  if(color.length)parts.push(`The ${color.join(" and the ")} ${color.length>1?"are":"is"} color only.`);
+  if(ask.length){parts.push(`For the ${ask.join(" and the ")}, send me a message and I'll get right back to you.`)}
+  if(!ask.length&&yes.length)parts.push("Got a name in mind? Send it my way.");
+  say(parts.join(" "));
+  if(ask.length)handoffBtn();else after();
+}
+function moreOptionsQuiet(){const pool=((S.occ&&POOL[S.occ])||ANY).filter(k=>!(k==="tree6"&&S.count>2)&&!(S.rejected&&S.rejected.has(k)));const shown=new Set([S.pick,...(S.shown||[])]);const names=new Set();const picks=pool.filter(k=>!shown.has(k)&&P[k]&&!names.has(P[k].name)&&names.add(P[k].name)).slice(0,3);
+  if(!picks.length){say("That was my best fit for this. Tell me a budget and I'll find another.");return setChips([["About $15",()=>byBudget(15)],["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)],["About $100",()=>byBudget(100)]])}
+  S.pick=picks[0];for(const k of picks)card(k);objections();}
+function moreOptions(){
+  const pool=(S.occ&&POOL[S.occ])||ANY;const shown=new Set([S.pick,...(S.shown||[])]);
+  if(S.step==="tier"&&S.occ)for(const [,k] of OCC[S.occ].tiers)shown.add(k);S.more=(S.more||0)+1;
+  const names=new Set();const picks=pool.filter(k=>!shown.has(k)&&P[k]&&!names.has(P[k].name)&&names.add(P[k].name)).slice(0,3);
+  if(!picks.length){say("Those are my best fits for this. Want to try a different budget?");setChips([["About $15",()=>byBudget(15)],["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)]]);return}
+  say(S.more>1?"Here's another one I love for this. Or tell me your budget.":"Sure. Here's what else I love for this. Or tell me your budget.");S.pick=picks[0];for(const k of picks)card(k);S.step="after";objections();
+}
+const MAT={keepsake:"hand-painted layered wood, with the names and date engraved around the edge",jerusalem:"layered wood, and I can engrave the border",ahava:"hand-painted layered wood on a stand, about 15 inches wide",heartHamsa:"a single layer of 1/8 inch laser cut wood. It's meant to be delicate, a light piece of wall art in the color you pick",tree6:"laser cut and engraved wood",tree11:"laser cut and engraved wood",tree:"laser cut and engraved wood",treeMem:"laser cut and engraved wood",letters:"laser cut wood letters",safari:"laser cut wood letters",farm:"laser cut wood letters",dreidel:"laser cut and engraved wood",dreidelName:"laser cut and engraved wood",miracle:"laser cut wood",doorsign:"laser cut wood",shelf:"layered wood",mitzvahSign:"laser cut and engraved wood",weddingSign:"laser cut and engraved wood",baby:"laser cut and engraved wood",mug:"a printed ceramic mug",tote:"a printed tote bag"};
+function slugKey(slug){return Object.keys(P).find(k=>P[k].slug===slug&&!/tree6|tree11|treeMem|dreidelName/.test(k))}
+function compareItems(items){
+  const lines=[],unknown=[];
+  for(const [n,slug,amt] of items){const k=slugKey(slug);if(DESC[slug]){lines.push(`${n}, ${DESC[slug][1]}. ${DESC[slug][0]}.`)}else if(k&&P[k]){lines.push(`${n}, ${P[k].price}. ${P[k].custom}`)}else{lines.push(`${n}, $${amt}.`);unknown.push(n)}}
+  lastBot="";say("Here's the quick difference.\n"+lines.join("\n")+(unknown.length?`\nFor details on the ${unknown.join(" and the ")}, tap below and ask me.`:"\nWhich one is catching your eye?"));
+  S.lastIntent="compare";if(unknown.length){lastQ="What's the difference between the "+items.map(i=>i[0]).join(" and the ")+"?";handoffBtn()}else after();return true}
+function compareShown(){
+  if(S.lastView&&S.lastView.type==="list"&&S.lastView.items.length>1)return compareItems(S.lastView.items.slice(0,4));
+  const ks=(S.lastView&&S.lastView.type==="cards"?S.lastView.keys:(S.shown||[])).slice(0,3);if(ks.length<2)return false;
+  lastBot="";say("Here's the quick difference.\n"+ks.map(k=>`${P[k].name}, ${P[k].price}. ${P[k].custom}`).join("\n")+"\nWhich one is catching your eye?");S.lastIntent="compare";
+  setChips(ks.map(k=>[P[k].name,()=>{S.pick=k;say("Great pick. "+P[k].custom);card(k);closeLine()}]));return true}
+function materialShown(){const ks=(S.shown&&S.shown.length?S.shown.slice(0,3):(S.pick?[S.pick]:[]));if(!ks.length)return false;const known=ks.filter(k=>MAT[k]);if(!known.length)return false;
+  const unknown=ks.filter(k=>!MAT[k]);say(known.map(k=>`The ${P[k].name} is ${MAT[k]}.`).join(" ")+(unknown.length?" For the others, tap below and ask me.":""));if(unknown.length)handoffBtn();else after();return true}
+const CAT=[["Hanukkah Dreidel Coaster Set", "custom-wood-hebrew-dreidel-set", 48], ["Pomegranate shaped napkin rings, made for your table", "personalized-hebrew-pomegranate-table-accent", 57], ["Shalom Y'all Peace Floral Accent Coffee Mug (11/15oz)", "colorful-hamsa-shalom-mug", 17.99], ["Bar/Bat Mitzvah Mid-Century Modern Star of David Plaque", "personalized-bar-mitzvah-wood-sign-gold-star-of-david-midcentury-modern-25-colors", 70], ["Heart Hamsa Wall Decor (3 Sizes)", "heart-hamsa-wall-decor-3-sizes", 32], ["Bar Mitzvah Keepsake Box", "personalized-bar-mitzvah-keepsake-box", 138], ["Shanah Tovah Table Set", "shanah-tovah-table-set", 249], ["Safari Animals Cutout Wood Letters (A-Z)", "floral-cutout-wood-letters-az", 5], ["Am Yisrael Chai Wood Wall Art", "am-yisrael-chai-wood-wall-art", 95.99], ["Shanah Tovah Wooden Pomegranate Napkin Ring", "personalized-matzah-plate-insert", 57], ["Patriotic American Flag Hamsa Wood Wall Art, Laser-Cut Stars and Stripes", "patriotic-hand-blessing-wall-art", 80], ["Custom Hebrew Letters Cutouts (Wood)", "custom-hebrew-name-cutouts-wood", 3.99], ["Proud Zionist Dad Cap, Embroidered Baseball Hat, Pro Israel Statement Cap, Adjustable Strap", "proud-zionist-dad-cap-embroidered-baseball-hat-pro-israel-statement-cap-adjustable-strap", 55], ["Shana Tova Challah Board", "personalized-shana-tova-wood-plaque", 120], ["Jerusalem Hamsa Layered Wood Art", "jerusalem-hamsa-layered-wood-art", 83], ["Kiddish Cup Layered Wood Art Plaque", "chai-lights-layered-wood-art-plaque", 83], ["Shabbat or Chag \u201cSurvival Kit\u201d Wine Bottle Tag", "shabbat-survival-kit-wine-bottle-tag", 10], ["Honey Plate with Blessing", "honeycomb-star-wall-blessing", 75], ["The Sweet New Year Honey Jar", "personalized-honeycomb-smash-keepsake", 50], ["Jewish Wedding Sign, Family Name Est. Date, Star of David Wood Plaque", "custom-heirloom-jewish-home-plaque", 65], ["Custom Baby Stats Name Sign (Letter)", "custom-baby-stats-name-sign-letter", 75], ["Hebrew \u201cChopped Liver\u201d Tote Bag", "hebrew-chopped-liver-tote-bag", 36.99], ["Ahava Heart Hebrew Wood Stand Sign", "ahava-heart-hebrew-wood-stand-sign", 92], ["Farm Scene Alphabet Letter Cutout", "farm-scene-alphabet-letter-cutout", 5], ["Tree of Life Judaica Wall Art", "tree-of-life-judaica-wall-plaque", 88], ["Hebrew \"Chopped Liver\" Funny Jewish T-Shirt - Yiddish Humor Tee", "chai-life-hebrew-tee", 29.99], ["Build Your Own Table Tee", "build-your-own-table-tee", 34.99], ["Proud Zionist Trucker Hat", "proud-zionist-trucker-hat", 33.99], ["Proud Zionist Coffee Mug, Jewish Pride Gift, Ceramic Mug 11oz", "hebrew-name-personalized-accent-mug", 23.99], ["Pink \u201cZionist\u201d Statement Tee", "pink-zionist-statement-tee", 34.99], ["Peace Love Prosperity Wall Art", "peace-love-prosperity-wall-art", 54], ["It\u2019s In My DNA Tee", "its-in-my-dna-tee", 31.99], ["Proud Zionist Heritage T-shirt", "proud-zionist-heritage-tee", 32.99], ["Lone Soldier Moms Raise Soldiers T-shirt", "lone-soldier-mom-heritage-tee", 36.99], ["Bar Mitzvah Name T-shirt", "personalized-bar-mitzvah-name-tee", 34.99], ["Artisan Hamsa Eye Wall Charm", "artisan-hamsa-wall-charm", 32], ["Artisan Hamsa Scroll Wall Art", "artisan-hamsa-scroll-wall-art", 32], ["Modern Golf Bag Mandala Wood Art Plaque", "modern-chai-heart-wood-art-plaque", 46], ["Prayer for Israel Wall Plaque", "personalized-hebrew-prayer-wall-plaque", 92], ["Am Yisrael Chai T-shirt", "am-yisrael-chai-heritage-tee", 32.99], ["Jewish OG Icons & Me Statement T-shirt", "jewish-icons-me-statement-tee", 34.99], ["Colorful Shalom Y'all Tote Bag", "colorful-shalom-heritage-tote", 36.99], ["This Too Shall Pass Tee", "this-too-shall-pass-tee", 34.99], ["Hineni Heirloom Hebrew Tee", "hineni-heirloom-hebrew-tee", 34.99], ["Mispacha Heart T-shirt Family Reunion", "personalized-mispacha-heart-tee", 34.99], ["American Flag Hamsa Patriotic Dad Cap", "patriot-heritage-embroidered-cap", 55], ["Shana Tovah Hebrew Acrylic Decor", "shanah-tovah-hebrew-acrylic-decor", 32], ["Got Hebrew? Jewish Humor Tee", "got-hebrew-jewish-humor-tee", 34.99], ["Israel Map Wood Wall Art", "israel-map-wood-wall-art", 24.99], ["Proud Lone Soldier Parent Tee", "proud-lone-soldier-parent-tee", 36.99], ["Birkat HaBayit Hamsa - multiple sizes and colors", "custom-hebrew-tree-wall-art", 54], ["Birkat Habayit Hamsa Wood Wall Art", "birkat-habayit-hamsa-wood-wall-art", 54], ["Bar/Bat Mitzvah Tree of Life Plaque", "lasercut-shabbat-blessing-plaque", 70], ["Hanukkah Miracle Wood Coaster", "hanukkah-miracle-wood-coaster", 5], ["10 Plagues Passover Seder Coaster", "10-plagues-passover-seder-cover", 30], ["Tree of Life Keepsake", "personalized-tree-of-life-keepsake", 190], ["Shalom Y'all Peace Hoodie", "shalom-tiedye-harmony-hoodie", 58.99], ["Chag Sameach (Happy Holidays) Pomegranate Hanging Decor", "chai-pomegranate-hanging-decor", 32], ["Aishet Chayil Hebrew Tee", "aishet-chayil-hebrew-tee", 34.99], ["Shabbat Shalom Engraved Challah Board", "shabbat-shalom-engraved-serving-board", 139], ["Star of David Birkat Habayit Blessing Wall Hanging", "personalized-star-of-blessing-plaque", 54], ["Star of David napkin rings, made for your table", "custom-hebrew-star-wood-ornament", 57], ["Shana Tovah Apple Wood Napkin Rings Hand Painted", "shana-tovah-apple-wood-decor", 64], ["Shalom Y'all Peace Sign floral sticker", "shalom-floral-wall-art", 7], ["Custom Pet Portrait Wood Plaque", "custom-pet-portrait-wood-plaque", 45], ["Hanukkah Layered Wood Shelf Sitter", "modern-hamsa-menorah-shadow-box", 95], ["Blessed Home Wooden Wall Art", "blessed-home-wooden-wall-art", 54], ["Tulip Welcome Door Hanger", "tulip-welcome-door-hanger", 49], ["Ladybug \u201cHello\u201d Wood Door Round", "ladybug-hello-wood-door-round", 49], ["Hanukkah Door Corner Welcome Sign", "hanukkah-door-corner-welcome-sign", 42], ["Wine Bottle Tag Gift (Holiday Kit)", "wine-bottle-tag-gift-holiday-kit", 10], ["Custom Monogram Name Letter Keepsake", "custom-monogram-name-letter-keepsake", 38], ["Custom Laser-Cut Bar Quote Coasters", "custom-lasercut-bar-quote-coasters", 10], ["Patriotic Heart & Stars Welcome Wreath", "patriotic-heart-stars-welcome-wreath", 49], ["Magen David Wood Art Plaque", "personalized-magen-david-wood-art-plaque", 89], ["Wood Pesach Napkin Ring (Passover)", "wood-pesach-place-card-passover", 6], ["Layered Wooden Star of David Wall Art", "filigree-star-of-david-wall-art", 52]];
+const SYN={tshirt:["tee","t-shirt"],"t-shirt":["tee","t-shirt"],tshirts:["tee","t-shirt"],shirt:["tee","t-shirt"],shirts:["tee","t-shirt"],tee:["tee"],tees:["tee"],apparel:["tee","t-shirt","hoodie","cap","hat"],wearable:["tee","t-shirt","hoodie","cap","hat"],wearables:["tee","t-shirt","hoodie","cap","hat"],wear:["tee","t-shirt","hoodie","cap","hat"],merch:["tee","t-shirt","hoodie","cap","hat","tote","mug","sticker"],outfit:["tee","t-shirt","hoodie","cap","hat"],sweater:["hoodie"],sweatshirts:["hoodie"],hoodies:["hoodie"],sweatshirt:["hoodie"],baseball:["cap","hat"],clothing:["tee","t-shirt","hoodie","cap","hat"],clothes:["tee","t-shirt","hoodie","cap","hat"],hat:["cap","hat"],hats:["cap","hat"],cap:["cap","hat"],caps:["cap","hat"],hoodie:["hoodie"],sweatshirt:["hoodie"],mug:["mug"],mugs:["mug"],signs:["sign"],plaques:["plaque"],cup:["mug","kiddish"],bag:["tote"],tote:["tote"],totes:["tote"],sticker:["sticker"],coaster:["coaster"],coasters:["coaster"],board:["board"],boards:["board"],challah:["challah"],napkin:["napkin"],plaque:["plaque"],sign:["sign"],passover:["passover","pesach","plagues"],pesach:["pesach","passover","plagues"],hamsa:["hamsa"],star:["star"],israel:["israel"],zionist:["zionist"],honey:["honey"],pet:["pet"],dog:["pet"],cat:["pet"],door:["door"],wreath:["wreath"],golf:["golf"],prayer:["prayer"],blessing:["blessing","birkat"],shabbat:["shabbat"],pomegranate:["pomegranate"],shelf:["shelf"],map:["map"],monogram:["monogram"],soldier:["soldier"],funny:["humor","chopped liver","got hebrew","dna"],humor:["humor","chopped liver","got hebrew"]};
+const POD=/tee|t-shirt|hoodie|cap|hat|mug|tote|sticker/i;
+const STOP=new Set("the and you have any for with what that this are there other more some does your from got sell carry want need like looking find show about can how much just also them they these those its it's gift gifts piece pieces thing things store shop please thanks thank yes kind sort type each every one ones want quote".split(" "));
+function catSearch(t){const words=t.replace(/[']/g,"").split(" ").filter(w=>w.length>2);const G=[];
+  for(const w of words){const b=w.replace(/(es|s)$/,"");if(SYN[w])G.push(SYN[w]);else if(SYN[b])G.push(SYN[b])}
+  const low=n=>n.toLowerCase().replace(/[']/g,"");const lw=CAT.map(c=>low(c[0]));
+  if(!G.length){for(const w of words){if(STOP.has(w)||w.length<4)continue;G.push([w.replace(/s$/,"")])}}
+  else{for(const w of words){const b=w.replace(/s$/,"");if(STOP.has(w)||SYN[w]||SYN[b]||SYN[w.replace(/(es|s)$/,"")]||b.length<3)continue;if(lw.some(n=>new RegExp("\\b"+b).test(n)))G.push([b])}}
+  if(!G.length)return [];const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");const hit=(n,g)=>g.some(k=>new RegExp("(^|[^a-z])"+esc(k)).test(n));const df=G.map(g=>lw.filter(n=>hit(n,g)).length||1);
+  const sc=CAT.map((c,i)=>[c,G.reduce((s,g,j)=>s+(hit(lw[i],g)?1/df[j]:0),0)]).filter(x=>x[1]>0);if(!sc.length)return [];const top=Math.max(...sc.map(x=>x[1]));
+  return sc.filter(x=>x[1]>=top*0.66).sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
+function listCard(title,items){S.lastView={type:"list",items};const c=document.createElement("div");c.className="card";c.innerHTML='<div class="eyebrow"></div><div class="list"></div>';c.querySelector(".eyebrow").textContent=title;const L=c.querySelector(".list");
+  for(const [n,slug,amt] of items){const r=document.createElement("a");r.className="li";r.href=url(slug);r.target="_blank";r.rel="noopener";const a=document.createElement("span");a.textContent=n;const b=document.createElement("span");b.className="amt";b.textContent="$"+amt;r.append(a,b);L.append(r)}
+  log.append(c);scroll()}
+function catAnswer(t){const hits=catSearch(t);if(!hits.length)return false;S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
+  say(hits.length===1?(DESC[hits[0][1]]?`${/ (do|does|have|any|got|is there|are there) /.test(t)?"Yes. ":""}${DESC[hits[0][1]][0]}. ${DESC[hits[0][1]][1][0].toUpperCase()+DESC[hits[0][1]][1].slice(1)}. Tap to see it.`:`Yes. The ${hits[0][0]}, from $${hits[0][2]}.${POD.test(hits[0][0])?" Printed and shipped by my print partner.":""} Tap to see it.`):`${has(t,"like","love","what else","show me")?"Great taste.":"Yes."} I have ${hits.length} of those. Tap one to see it.`+(pod?" These are printed and shipped by my print partner.":""));
+  listCard(pod?"Printed and shipped for you":"From my shop",hits.slice(0,16));after();return true}
+const GLOSS=[
+ [["lone soldier"],"A lone soldier serves in the Israel Defense Forces without immediate family in Israel. Many volunteer from abroad."],
+ [["birkat habayit","birkat"],"Birkat HaBayit is Hebrew for blessing of the home. It hangs near the front door."],
+ [["hamsa"],"A hamsa is a hand-shaped symbol of protection and blessing. Many hang one by the door."],
+ [["aishet chayil","eshet chayil"],"Aishet Chayil is Hebrew for woman of valor, from Proverbs. It's often sung Friday night to honor the women of the home."],
+ [["am yisrael chai"],"Am Yisrael Chai is Hebrew for the people of Israel live."],
+ [["hineni"],"Hineni is Hebrew for here I am."],
+ [["mispacha","mishpacha"],"Mishpacha is Hebrew for family."],
+ [["ahava"],"Ahava is Hebrew for love."],
+ [["chai"],"Chai is Hebrew for life. It's also the number 18."],
+ [["tree of life"],"The Tree of Life is a Jewish symbol of Torah and family roots."],
+ [["shana tova","shanah tovah","shana tovah"],"Shana Tova means a good year. It's the Rosh Hashanah greeting."],
+ [["nun","gimel"],"The dreidel letters nun, gimel, hey, and shin stand for a great miracle happened there."],
+ [["chopped liver"],"Chopped liver is the classic deli dish, and the punchline in \"what am I, chopped liver?\""],
+];
+function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning","mean","who is","explain"," means"))return false;
+  for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
+  return false}
+function after(){S.pick?objections():setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
+form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;sample?ask(v):localAnswer(v)});
+
+open();
+(async()=>{try{const s=await window.claude?.use("sample");if(s){sample=s}}catch(e){}})();
+</script>
+
+</html>
