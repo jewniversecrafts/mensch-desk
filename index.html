@@ -54,7 +54,7 @@ form{display:flex;gap:8px;padding-block:6px calc(12px + env(safe-area-inset-bott
   header img{width:64px!important}
   .brand h1{font-size:18px!important}
   .brand p{display:none}
-  .foot{display:none}
+  .foot{font-size:11.5px;padding-block:0 4px}.foot-more{display:none}
 
   body{font-size:17.5px;line-height:1.55}
   header img{width:84px}
@@ -92,7 +92,7 @@ form{display:flex;gap:8px;padding-block:6px calc(12px + env(safe-area-inset-bott
     <input id="box" autocomplete="off" placeholder="Type a question">
     <button id="send" type="submit">Send</button>
   </form>
-  <p class="foot">AI sales assistant trained on my shop. I review every order and send a proof before I engrave.</p>
+  <p class="foot">Chats are reviewed to improve answers. <span class="foot-more">I review every order and send a proof before I engrave.</span></p>
 </div>
 
 <script>
@@ -148,7 +148,7 @@ function scroll0(){const bots=log.querySelectorAll(".msg.bot");const b=bots[bots
 let lastBot="";
 function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)){if(S.occ&&UNSURE[S.occ]){const u=UNSURE[S.occ];text="Let me pick for you. "+u[1];lastBot=text;const d0=document.createElement("div");d0.className="msg bot";d0.textContent=text;log.append(d0);scroll();S.step="after";setTimeout(()=>recommend(u[0],""),0);return d0}
     text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
-function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn()};chips.append(b)}scroll()}
+function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn();logChat("TAP",label)};chips.append(b)}scroll()}
 function card(key,extra){
   if(S.rejected&&S.rejected.has(key))return;
   const p=P[key];const c=document.createElement("div");c.className="card";
@@ -179,7 +179,7 @@ function pickOcc(k){
   S.occ=k;const o=OCC[k];
   if(o.hanukkah&&pastCutoff()){say("My Hanukkah order deadline has passed. Send me a message and I'll see what I can do.");handoffBtn();return}
   if(o.memorial){say("I'm so sorry. When do you need it?");setChips([["Within the week, for shiva",()=>{S.pick="treeMem";S.step="after";say("I can rush it with next day air. You'd cover that postage. Send me a message and I'll confirm the timing.");card("treeMem");objections()}],["For sheloshim, unveiling, or yahrzeit",()=>{recommend("treeMem","A lasting place for their name.")}]]);return}
-  say(((S.pre||o.pre)?(S.pre||o.pre)+" ":"")+"When do you need it in hand?");S.pre=null;S.step="timing";
+  say((!S.noPre&&(S.pre||o.pre)?(S.pre||o.pre)+" ":"")+"When do you need it in hand?");S.pre=null;S.noPre=false;S.step="timing";
   const hz=o.hanukkah||S.hanu;
   setChips([["This week",()=>timing("rush")],["By early November",()=>timing("nov")],[hz?"By Hanukkah, Dec 4":"Later is fine",()=>timing(hz?"hanukkah":"later")]]);
 }
@@ -326,6 +326,9 @@ function localAnswer0(raw){
   t=t.replace(/ (dreidles?|driedels?|dreidl|dreidls|draydels?|dredels?|dridels?) /g," dreidel ").replace(/ (hamsah|hamza|chamsa) /g," hamsa ").replace(/ (chanukah|chanukkah|hannukah|hanukah|hannukkah) /g," hanukkah ");
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
+  {const r=REL.find(([w])=>t.includes(w));if(r&&S.occ&&(S.step==="timing"||S.step==="tier")){const who=r[0].trim();S.who=who;const o=OCC[S.occ];
+    if(S.step==="timing"){say(`For your ${who}, perfect.`);S.noPre=true;return pickOcc(S.occ)}
+    say(`For your ${who}, perfect. ${o.ask}`);return setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]])}}
   if(has(t,"don't like","dont like","not a fan","hate the","not into","not the ","no to the")){
     S.rejected=S.rejected||new Set();
     const nm=k=>P[k].name.toLowerCase();
@@ -554,7 +557,10 @@ function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning
   for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
   return false}
 function after(){S.pick?objections():setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
-form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;localAnswer(v)});
+const SID=Math.random().toString(36).slice(2,7);let LOGN=0;
+function logChat(kind,text){try{LOGN++;const pg=(document.referrer||location.href).replace(/^https?:\/\//,"").slice(0,60);const msg=`${SID} #${LOGN} | ${kind}: ${text} | BOT: ${(lastBot||"").slice(0,400)} | from: ${pg}`;
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfOKYWczmlHxFKeAlEAwGhzLctnlvvHehUmIHU672PPLh61NA/formResponse",{method:"POST",mode:"no-cors",body:new URLSearchParams({"entry.2054542687":msg})}).catch(()=>{})}catch(e){}}
+form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;localAnswer(v);logChat("TYPED",v)});
 
 open();
 </script>
