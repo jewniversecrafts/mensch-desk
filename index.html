@@ -141,14 +141,14 @@ const OCC={
 
 const log=document.getElementById("log"),chips=document.getElementById("chips"),form=document.getElementById("f"),box=document.getElementById("box"),send=document.getElementById("send");
 {const _ap=log.append.bind(log);log.append=(...n)=>{_ap(...n);_ap(chips)};_ap(chips)}
-let S={occ:null,pick:null},turns=[],sample=null,aiMode=false,busy=false;
+let S={occ:null,pick:null},busy=false;
 
 function scroll(){try{scroll0()}catch(e){try{log.scrollTop=log.scrollHeight}catch(_){}}}
 function scroll0(){const bots=log.querySelectorAll(".msg.bot");const b=bots[bots.length-1];if(!b){log.scrollTop=log.scrollHeight;return}const off=b.getBoundingClientRect().top-log.getBoundingClientRect().top-10;log.scrollTop=log.scrollTop+off}
 let lastBot="";
 function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)){if(S.occ&&UNSURE[S.occ]){const u=UNSURE[S.occ];text="Let me pick for you. "+u[1];lastBot=text;const d0=document.createElement("div");d0.className="msg bot";d0.textContent=text;log.append(d0);scroll();S.step="after";setTimeout(()=>recommend(u[0],""),0);return d0}
     text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
-function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();aiMode&&sample?ask(label):fn()};chips.append(b)}scroll()}
+function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn()};chips.append(b)}scroll()}
 function card(key,extra){
   if(S.rejected&&S.rejected.has(key))return;
   const p=P[key];const c=document.createElement("div");c.className="card";
@@ -234,7 +234,7 @@ function closeLine(){const p=P[S.pick];say(p&&p.memorial?"Questions go straight 
 function handoffBtn(){const c=document.createElement("div");c.className="card";const q=lastQ?("Hi Melissa, "+lastQ):"Hi Melissa, I have a question.";c.innerHTML='<div class="eyebrow">Straight to me</div><div class="q"></div><div class="row"><a class="btn primary" target="_blank" rel="noopener">Send on WhatsApp</a></div><div class="note" hidden></div>';c.querySelector(".q").textContent=q;msgLink(c.querySelector("a"),q,c.querySelector(".note"));log.append(c);scroll();setChips([["Start over",restart]])}
 function restart(){S={occ:null,pick:null};say("Let's find the right piece. Who's it for, and what's the occasion?");setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
 
-// ---------- AI mode ----------
+
 const DESC={
 "custom-wood-hebrew-dreidel-set":["8 dreidel coasters, 2 each of nun, gimel, hey, shin, standing in a base engraved Menorah Latkes Dreidel Repeat","$48, or $58 with your family name on the base"],
 "personalized-hebrew-pomegranate-table-accent":["Maroon wood pomegranate napkin rings engraved Shanah Tovah, with your family name painted in gold","set of 4 $57, 6 $72, 8 $87"],
@@ -289,80 +289,11 @@ const DESC={
 "wood-pesach-place-card-passover":["Wood napkin ring with Pesach in Hebrew","$6, 6 for $25, 12 for $50"],
 "filigree-star-of-david-wall-art":["Layered filigree Star of David in a dark wood frame","6 inch $52, 8 inch $85, 10 inch $125"]
 };
-const RULES=`You are the AI sales assistant for Jewniverse Crafts, speaking as Melissa Krumbein in first person ("I", "my", never "we"). Solo maker in Richmond, VA. Laser cut and laser engraved Judaica, made to order.
-VOICE: bestie warm, still clear on price, dates and policy. 2 to 4 short sentences, 12 words max each. Answer the question first, then one next step. At most one question per message. Contractions. No em dashes, no emojis, no hashtags, no double exclamation points. Never say handmade, hand engraved, curated, bespoke, artisanal, elevated, unique, or "personalized" alone (name what gets engraved). Never say "limited time", "act now", "last chance".
-DISCOVERY: open-ended ask -> ask "Who's it for, and what's the occasion?" Then timing (when they need it in hand), then budget as two anchors ("Closer to $50, or closer to $100?"). Skip anything already answered. Direct question -> answer it first, then ask the one missing thing.
-RECOMMEND: three beats. What I recommend (one product, one price). Why it fits (repeat their occasion/person/budget, no invented features). What to do next (one action). If two fit, offer two prices. Memorial gets ONE piece.
-OBJECTIONS: agree ("Totally fair." / "Of course."), one true fact or the next lower listed option, one question or next step. Never discount or offer codes. Never knock another seller. Never say "but", "actually", "to be honest". "I need to think about it" -> "Of course. Is it the price, the timing, or the piece?"
-CLOSE with "Got a name in mind? Send it my way." when starting an engraved order, otherwise "Questions go straight to me." Memorial uses only "Questions go straight to me."
-CATALOG (key: product, price, notes):
-dreidel: Hanukkah Dreidel Coaster Set, $48 original base, $58 family name on the base. 8 dreidel coasters (2 each nun, gimel, hey, shin) stand in a square base engraved "Menorah Latkes Dreidel Repeat". Not a box or container, no gift box. I'm making 20 sets this year. Order by Nov 5.
-miracle: Hanukkah Miracle Coasters, $5, 2 for $10, 4 for $20. Best teacher gift. A name can go on the back.
-doorsign: Hanukkah Door Corner Welcome Sign, $42.
-shelf: Hanukkah Layered Wood Shelf Sitter, $95 (6x6), $130 (8x8), $185 (10x10).
-winetag: Shabbat or Chag Survival Kit wine bottle tag, $10-$18. Add-on. A name can go on the back.
-mitzvahSign: Mid-Century Modern Star of David (bar/bat mitzvah plaque), layered, customer picks the colors for the top and bottom layers, 25+ colors, from $70. For a couple call it "the Star of David sign": their names and wedding date, same price.
-box: Bar Mitzvah Keepsake Box, $138.
-mitzvahTree (same layered plaque as mitzvahSign, same sizes and prices, different design): Tree of Life (bar/bat mitzvah plaque), layered Tree of Life with geometric Stars of David, customer picks the colors for the top and bottom layers. Name, parsha, and date engraved on a wood band across the center, Hebrew or English. 6x6 $70, 9x9 $101, 11x11 $146.
-weddingSign: Jewish Wedding Sign, family name and est. date, from $65.
-baby: Baby Stats Name Sign, from $75. For a couple call it "the name and date sign": names and wedding date, same price.
-letters: Custom Hebrew Letter Cutouts, per letter by size. 3in $3.99, 4in $4.99, 5in $6.99, 6in $8.99, 7in $9.99, 8in $10.99, 9in $11.99, 10in $12.99. Always ask the size. Top seller. LOOK: wood Hebrew letters, each cut as a separate piece. Customer picks the name and layout, then arranges, frames, or mounts them. Used on welcome tables, photo backdrops, shadow boxes, nursery walls. Size and number of letters set the price. 25+ colors, same price, chosen at checkout in a second question using the two color chart photos on the listing. This listing is Hebrew letters only.
-ENGLISH LETTERS: only themed English letters exist, with animals cut out of the letter. safari: Safari Animals Cutout Wood Letters, A to Z, from $5 per letter. farm: Farm Scene Alphabet Letter Cutout, A to Z, from $5 per letter. Dinosaur letters also exist; send a message to order those. Plain English letters (no animals) do not exist yet, so they are a maybe, hand off. Themed letters fit a kid's room or nursery.
-heartHamsa: Heart Hamsa Wall Decor, from $32, 3 sizes. Color only, never engraved.
-jerusalem: Jerusalem Hamsa Layered Wood Art, from $83. Border can be engraved.
-tree: Tree of Life Wall Art. 6in $88 up to 2 names. 11in $113 up to 6 names. Names, a date, a date range, any language incl. Hebrew. 7+ names is a maybe. Ask name count first. Never add names to a finished piece later.
-keepsake: Tree of Life Keepsake, $190. Hand-painted layered Tree of Life with their names and date engraved around the edge. Wedding, anniversary, grandparents.
-ahava: Ahava Heart Hebrew Stand Sign, $92, about 15in wide, hand-painted, letter color only, never names.
-honeyplate: Honey Plate with Blessing, $75.
-MORE PRODUCTS (answer from these, no BUY marker, point to the shop with [[DM]] only if asked for a link): ${Object.entries(DESC).map(([s,[d,p]])=>s.replace(/-/g," ")+": "+d+". "+p).join(" | ")}
-LOOKS: when asked how something looks, describe only what this catalog says, then point to the photos on the listing with [[BUY:key]]. Never invent colors, finishes, or materials.
-mug: Shalom Y'all mug $17.99. tote: Chopped Liver tote $36.99. Print partner ships these, no delivery date promised.
-MATCHES: host gift -> dreidel family name $58. Own Hanukkah table -> dreidel, or shelf. Teacher -> miracle. Bar/bat mitzvah -> mitzvahSign or box. Wedding/engagement -> weddingSign, tree 6in with names, ahava, or the name and date sign. New baby -> baby or letters. New home -> heartHamsa or jerusalem. Birthday -> heartHamsa or tree 6in with her name. Grandparents -> tree sized by grandkid count. Memorial -> open "I'm so sorry.", tree 6in with name and dates, or Hebrew letters; no mazel tov, no banter, no exclamation points. Under $25 -> letters, miracle, wine tag, mug.
-POLICIES: made to order, nothing in stock. Free US shipping. Ships next business day after the piece is done. Every engraved order gets a proof first. All sales final, no returns; damaged in transit is replaced free. Rush always available, no rush fee, customer pays faster postage; never promise an arrival date. International by request, customer pays actual postage and customs. Care: wood, dry cloth only; boards hand wash and mineral oil; nothing is dishwasher safe. Some listing photos are AI images and the listing says so.
-CALENDAR: today is ${new Date().toDateString()}. Last order date for Hanukkah and for anything needed before December is Nov 5. Orders ship by Nov 11. Orders placed Nov 6-30 ship in December. Hanukkah starts evening Dec 4. After Nov 5 for Hanukkah is a hand off. PRIVACY: never give a reason for the schedule or talk about my whereabouts. State the dates only. If asked why, say "That's my production schedule."
-QUESTIONS vs REQUESTS: a question about how something looks, its size, material, or details is a question. Answer it from the catalog. If the catalog doesn't cover it, say "Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in." and add [[DM]]. Say "I love that idea" ONLY when the customer asks for something custom or not listed. Never answer a question with "I love that idea".
-YES / MAYBE: yes only when the catalog above says so. Everything else (custom wording, extra names, sizes or colors not listed, discounts, bundles, bulk, wholesale, custom designs, anything damaged or upset, any question the catalog doesn't answer) is a maybe: say "I love that idea. Send me a message and I'll get right back to you." and add [[DM]]. Never hint it will be yes. Never guess a price.
-MARKERS (the page turns these into buttons; put each on its own line at the very end):
-[[BUY:key]] when you recommend a product, using the catalog key (dreidel, miracle, doorsign, shelf, winetag, mitzvahSign, mitzvahTree, box, weddingSign, baby, letters, safari, farm, heartHamsa, jerusalem, tree, keepsake, ahava, honeyplate, mug, tote). Only one per message.
-[[DM]] for any hand off.
-[[CHIPS:reply one|reply two|reply three]] up to 4 short replies the customer might tap next, in the customer's voice.
-Plain text only, no markdown.`;
 P.mitzvahTree={name:"Tree of Life",price:"from $70",slug:"lasercut-shabbat-blessing-plaque",custom:"A layered bar/bat mitzvah plaque with a Tree of Life and geometric Stars of David. Their name, parsha, and date are engraved on a wood band across the center, in Hebrew or English. You pick the colors for the top and bottom layers. 6x6 $70, 9x9 $101, 11x11 $146.",name_cta:true};
 P.honeyplate={name:"Honey Plate with Blessing",price:"$75",slug:"honeycomb-star-wall-blessing",custom:"Hebrew blessings, bees, and a honeycomb center. A name can be added."};
 P.tote={name:"Chopped Liver Tote",price:"$36.99",slug:"hebrew-chopped-liver-tote-bag",custom:"Printed and shipped by my print partner."};
 P.tree={name:"Tree of Life Wall Art",price:"$88 for 6 inch, $113 for 11 inch",slug:"tree-of-life-judaica-wall-plaque",custom:"Names and dates, any language.",name_cta:true};
 
-function historyTurns(){
-  // seed the AI with what the guided flow already showed
-  const t=[];for(const el of log.children){if(!el.classList.contains("msg")||el.classList.contains("thinking"))continue;const role=el.classList.contains("me")?"user":"assistant";const c=el.textContent.trim();if(!c)continue;if(t.length&&t[t.length-1].role===role)t[t.length-1].content+="\n"+c;else t.push({role,content:c})}
-  return t.slice(-20);
-}
-async function ask(text){
-  busy=true;send.disabled=true;chips.replaceChildren();
-  if(!aiMode){aiMode=true;turns=historyTurns();if(turns.length&&turns[turns.length-1].role==="user"&&turns[turns.length-1].content===text)turns.pop()}
-  turns.push({role:"user",content:text});
-  const b=say("Thinking...");b.classList.add("thinking");
-  try{
-    const {text:out}=await sample([{role:"user",content:RULES},...turns.slice(-20)],{cache:false,modelTier:"quick",onText:({text})=>{b.classList.remove("thinking");b.textContent=clean(text).body||"..."}});
-    turns.push({role:"assistant",content:out});
-    const r=clean(out);b.textContent=r.body;
-    if(r.buy&&P[r.buy]){S.pick=r.buy;card(r.buy)}
-    if(r.dm)handoffBtn();
-    if(r.chips.length)setChips(r.chips.map(c=>[c,()=>localAnswer(c)]));
-  }catch(e){
-    b.classList.remove("thinking");
-    if(e&&e.code==="not_granted"||e&&e.code==="sampling_disabled"||e&&e.code==="capability_disabled"){b.remove();aiMode=false;sample=null;localAnswer(text)}
-    else if(e&&e.code==="cancelled"){b.textContent=e.text||""}
-    else{b.textContent=(e&&e.text)||"That didn't go through. Try sending it again.";}
-  }finally{busy=false;send.disabled=false;box.focus()}
-}
-function clean(s){
-  const buy=(s.match(/\[\[BUY:([A-Za-z]+)\]\]/)||[])[1];
-  const dm=/\[\[DM\]\]/.test(s);
-  const cm=(s.match(/\[\[CHIPS:([^\]]*)\]\]/)||[])[1];
-  const body=s.replace(/\[\[[^\]]*\]\]?/g,"").replace(/\[\[[^\]]*$/,"").trim();
-  return {body,buy,dm,chips:cm?cm.split("|").map(x=>x.trim()).filter(Boolean).slice(0,4):[]};
-}
 
 
 // ---------- Budget matching ----------
@@ -623,13 +554,10 @@ function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning
   for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
   return false}
 function after(){S.pick?objections():setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
-form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;sample?ask(v):localAnswer(v)});
+form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;localAnswer(v)});
 
 open();
-(async()=>{try{const s=await window.claude?.use("sample");if(s){sample=s}}catch(e){}})();
 </script>
-
-
 
 </body>
 </html>
