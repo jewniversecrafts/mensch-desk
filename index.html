@@ -426,6 +426,7 @@ function localAnswer0(raw){
   const bud=parseBudget(t);
   if(bud&&!has(t,"ship","postage"))return byBudget(bud);
   if(has(t,"personaliz","personalis","customiz","engrave","add a name","name on","put a name","their name","monogram")&&!has(t,"letter"))return persAnswer();
+  if((has(t,"why","how come","so early","so soon"))&&has(t,"nov","cutoff","cut off","deadline","early","soon","order by"))return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),after();
   if(has(t,"discount","coupon"," code "," sale "," deal "," promo"))return say("I don't run codes. Every order gets free US shipping and a proof before I engrave."),after();
   if(has(t,"return","refund","exchange"))return objReturn();
   if(has(t,"proof"))return say("Yes. You get a proof to approve before I engrave anything."),after();
