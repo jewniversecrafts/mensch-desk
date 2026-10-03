@@ -169,7 +169,24 @@ const WA="https://api.whatsapp.com/send/?phone=16175396877&type=phone_number&app
 function msgLink(a,txt,note){a.href=WA+encodeURIComponent(txt);note.textContent="No WhatsApp? Text (617) JEWNVRS, that's 617-539-6877, or email chai@jewniversecrafts.com";note.hidden=false}
 function pastCutoff(){return new Date()>new Date("2026-11-05T23:59:00-05:00")}
 
-function open(){
+function pageCtx(){try{const q=new URLSearchParams(location.search);const u=(q.get("u")||"").toLowerCase(),t0=q.get("t")||"";if(u.indexOf("/product-page/")<0)return null;
+  const seg=u.split("/product-page/")[1].split(/[\/?#]/)[0];let hit=CAT.find(c=>c[1]===seg);
+  if(!hit){const tk=s=>new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").filter(w=>w.length>2));const a=tk(t0.split(/\s[|–—-]\s/)[0]);let best=0,bc=null;
+    for(const c of CAT){const b=tk(c[0]);let i=0;a.forEach(w=>{if(b.has(w))i++});const j=i/((a.size+b.size-i)||1);if(j>best){best=j;bc=c}}
+    hit=best>=0.5?bc:null}
+  return hit||null}catch(e){return null}}
+const shortName=c=>c[0].split(",")[0].trim();
+function aboutPage(){const c=S.page||(S.pick&&P[S.pick]&&CAT.find(x=>x[1]===P[S.pick].slug));if(!c)return false;const d=DESC[c[1]];
+  say(d?`${d[0]}. ${d[1][0].toUpperCase()+d[1].slice(1)}.`:`The ${shortName(c)} starts at $${c[2]}. The listing photos show it best.`);
+  const k=Object.keys(P).find(k=>P[k].slug===c[1]);
+  if(k){S.pick=k;card(k);objections()}else{listCard("This piece",[c]);setChips([["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;open0()}]])}
+  return true}
+function open(){const pc=pageCtx();
+  if(pc){S.page=pc;const k=Object.keys(P).find(k=>P[k].slug===pc[1]);if(k)S.pick=k;
+    say(`Shalom. I see you're looking at the ${shortName(pc)}. What would you like to know about it?`);
+    setChips([["Tell me about this piece",()=>localAnswer("tell me about this piece")],["What sizes does it come in?",()=>localAnswer("what sizes does it come in")],["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;S.pick=null;open0()}]]);return}
+  open0()}
+function open0(){
   say("Shalom, you found the Mensch at the Desk. Not sure what to get? That's my whole job. Think of me as the aunt with great taste and zero guilt trips. I make every piece to order in my Richmond, VA studio.\nSo tell me, who are we shopping for, and what's the occasion?");
   setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]),["Just browsing",browsing]]);
 }
@@ -329,8 +346,15 @@ function localAnswer0(raw){
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
   S.raw=raw;
+  if(S.pick&&has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
+    say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
+  }
+  if((S.page||S.pick)&&has(t,"tell me about","about this","about it","tell me more","more about","describe","what is this","what is it","more details","more info")&&aboutPage())return;
+  if(!S.page&&!S.pick&&has(t,"this piece","this one","this item","this product","this page")&&has(t,"about","tell me","what is","details","info")){say("Which piece are you looking at? Tell me what it's called and I'll pull it up.");return after()}
+  if(S.page&&!P[S.pick||""]&&has(t,"add a name","put a name","their name","engrave","personaliz","customiz","monogram","add text","custom text","add my")){const nm=shortName(S.page);lastQ=`Can I add a name or text to the ${nm}?`;say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn()}
   if(has(t,"different size","other size","another size","what sizes","which sizes","what size","size options","sizes do","sizes does","in a smaller","in a larger","smaller size","come in other")){
     const keys=(S.shown&&S.shown.length?[...new Set(S.shown)]:(S.pick?[S.pick]:[]));const pk=S.pick&&P[S.pick]?P[S.pick]:(keys.length===1?P[keys[0]]:null);
+    if(!pk&&S.page){const d0=DESC[S.page[1]];if(d0&&/inch|\d+x\d+|size/i.test(d0[1])){say(`Here are the sizes for the ${shortName(S.page)}. ${d0[1][0].toUpperCase()+d0[1].slice(1)}.`);return after()}lastQ=`What sizes does the ${shortName(S.page)} come in?`;say("I'd like to check the sizes on that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn()}
     if(!pk&&S.lastCat&&S.lastCat.length>1){say("Sizes depend on the piece. Tap one to see every size.");listCard("From my shop",S.lastCat.slice(0,16));return after()}
     if(!pk){say("Which piece are you looking at? I'll pull up its sizes.");return after()}
     const d=DESC[pk.slug];const m=(pk.custom||"").match(/\d+x\d+[^.]*(?:\.\d+)?[^.]*/);
@@ -402,9 +426,6 @@ function localAnswer0(raw){
   }
   if(has(t,"bigger","larger","big enough","too small","too little","more impact","an impact","make a statement","biggest","largest")){
     say("Good thinking on size. I'd like to look at the sizes and your budget together. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
-  }
-  if(S.pick&&has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
-    say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
   }
   if(S.step==="timing"&&!isQ){
     let k=null;
