@@ -148,7 +148,9 @@ function scroll0(){const bots=log.querySelectorAll(".msg.bot");const b=bots[bots
 let lastBot="";
 function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)){if(S.occ&&UNSURE[S.occ]){const u=UNSURE[S.occ];text="Let me pick for you. "+u[1];lastBot=text;const d0=document.createElement("div");d0.className="msg bot";d0.textContent=text;log.append(d0);scroll();S.step="after";setTimeout(()=>recommend(u[0],""),0);return d0}
     text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}if(text===lastBot&&text.length>30){text="I keep giving you the same answer, so let me step in. Tap below and send me your question on WhatsApp.";setTimeout(handoffBtn,0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
-function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn();logChat("TAP",label)};chips.append(b)}scroll()}
+let LASTCHIPS=null;
+function resumeChips(){if(LASTCHIPS&&LASTCHIPS.length)setChips(LASTCHIPS);else after()}
+function setChips(list){LASTCHIPS=list;chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn();logChat("TAP",label)};chips.append(b)}scroll()}
 function card(key,extra){
   if(S.rejected&&S.rejected.has(key))return;
   const p=P[key];const c=document.createElement("div");c.className="card";
@@ -337,7 +339,7 @@ function localAnswer0(raw){
     if(m&&SZ.test(m[0])){say(`Here are the sizes for the ${pk.name}. ${m[0]}.`);return after()}
     lastQ=`What sizes does the ${pk.name} come in?`;say("I'd like to check the sizes on that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn()
   }
-  if(has(t,"far away","too early","too soon","plenty of time","a long way","months away","not until","way off","still time","time left")&&(has(t," hanukkah ","dec ","december","nov ","november","holiday","order","deadline","cutoff","cut off")||S.hanu||(S.occ&&OCC[S.occ]&&OCC[S.occ].hanukkah))){S.hanu=true;return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),after()}
+  if(has(t,"far away","too early","too soon","plenty of time","a long way","months away","not until","way off","still time","time left")&&(has(t," hanukkah ","dec ","december","nov ","november","holiday","order","deadline","cutoff","cut off")||S.hanu||(S.occ&&OCC[S.occ]&&OCC[S.occ].hanukkah))){S.hanu=true;return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),resumeChips()}
   {const r=REL.find(([w])=>t.includes(w));if(r&&S.occ&&(S.step==="timing"||S.step==="tier")){const who=r[0].trim();S.who=who;const o=OCC[S.occ];
     if(S.step==="timing"){say(`For your ${who}, perfect.`);S.noPre=true;return pickOcc(S.occ)}
     say(`For your ${who}, perfect. ${o.ask}`);return setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]])}}
@@ -441,7 +443,7 @@ function localAnswer0(raw){
   const bud=parseBudget(t);
   if(bud&&!has(t,"ship","postage"))return byBudget(bud);
   if(has(t,"personaliz","personalis","customiz","engrave","add a name","name on","put a name","their name","monogram")&&!has(t,"letter"))return persAnswer();
-  if((has(t,"why","how come","so early","so soon"))&&has(t,"nov","cutoff","cut off","deadline","early","soon","order by"))return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),after();
+  if((has(t,"why","how come","so early","so soon"))&&has(t,"nov","cutoff","cut off","deadline","early","soon","order by"))return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),resumeChips();
   if(has(t,"discount","coupon"," code "," sale "," deal "," promo"))return say("I don't run codes. Every order gets free US shipping and a proof before I engrave."),after();
   if(has(t,"return","refund","exchange"))return objReturn();
   if(has(t,"proof"))return say("Yes. You get a proof to approve before I engrave anything."),after();
@@ -576,7 +578,7 @@ function isQ0(t){return /\?/.test(t)||/^ (how|what|can|do|does|is|are|will|why|w
 function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning","mean","who is","explain"," means"))return false;
   for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
   return false}
-function after(){S.pick?objections():setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
+function after(){S.pick?objections():(S.step==="timing"||S.step==="tier")&&LASTCHIPS&&LASTCHIPS.length?setChips(LASTCHIPS):setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
 const SID=Math.random().toString(36).slice(2,7);let LOGN=0;
 function logChat(kind,text){try{LOGN++;const pg=(document.referrer||location.href).replace(/^https?:\/\//,"").slice(0,60);const msg=`${SID} #${LOGN} | ${kind}: ${text} | BOT: ${(lastBot||"").slice(0,400)} | from: ${pg}`;
   fetch("https://docs.google.com/forms/d/e/1FAIpQLSfOKYWczmlHxFKeAlEAwGhzLctnlvvHehUmIHU672PPLh61NA/formResponse",{method:"POST",mode:"no-cors",body:new URLSearchParams({"entry.2054542687":msg})}).catch(()=>{})}catch(e){}}
