@@ -403,6 +403,9 @@ function localAnswer0(raw){
   if(has(t,"bigger","larger","big enough","too small","too little","more impact","an impact","make a statement","biggest","largest")){
     say("Good thinking on size. I'd like to look at the sizes and your budget together. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
   }
+  if(S.pick&&has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
+    say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
+  }
   if(S.step==="timing"&&!isQ){
     let k=null;
     if(has(t,"asap","this week","tomorrow","few days","right away","soon"," now "))k="rush";
