@@ -147,7 +147,7 @@ function scroll(){try{scroll0()}catch(e){try{log.scrollTop=log.scrollHeight}catc
 function scroll0(){const bots=log.querySelectorAll(".msg.bot");const b=bots[bots.length-1];if(!b){log.scrollTop=log.scrollHeight;return}const off=b.getBoundingClientRect().top-log.getBoundingClientRect().top-10;log.scrollTop=log.scrollTop+off}
 let lastBot="";
 function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)){if(S.occ&&UNSURE[S.occ]){const u=UNSURE[S.occ];text="Let me pick for you. "+u[1];lastBot=text;const d0=document.createElement("div");d0.className="msg bot";d0.textContent=text;log.append(d0);scroll();S.step="after";setTimeout(()=>recommend(u[0],""),0);return d0}
-    text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
+    text="Let me show you my favorites. Or tap below and I'll help on WhatsApp.";setTimeout(()=>{S.pick="dreidelName";card("dreidelName");card("heartHamsa");card("tree6");handoffBtn();setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])},0)}if(text===lastBot&&text.length>30){text="I keep giving you the same answer, so let me step in. Tap below and send me your question on WhatsApp.";setTimeout(handoffBtn,0)}lastBot=text}const d=document.createElement("div");d.className="msg "+who;d.textContent=text;log.append(d);scroll();return d}
 function setChips(list){chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn();logChat("TAP",label)};chips.append(b)}scroll()}
 function card(key,extra){
   if(S.rejected&&S.rejected.has(key))return;
@@ -301,7 +301,7 @@ const N={mitzvahTree:70,keepsake:190,dreidel:48,dreidelName:58,miracle:10,doorsi
 const POOL={kid:["safari","farm","letters"],table:["miracle","doorsign","dreidel","dreidelName","shelf"],host:["winetag","miracle","doorsign","dreidel","dreidelName","shelf"],teacher:["miracle","winetag","mug","doorsign"],mitzvah:["letters","heartHamsa","mitzvahSign","mitzvahTree","box"],wedding:["heartHamsa","weddingSign","tree6","ahava","tree11","keepsake"],baby:["safari","letters","heartHamsa","baby"],home:["heartHamsa","jerusalem","ahava"],birthday:["mug","tote","heartHamsa","tree6","ahava"],grand:["keepsake","jerusalem","ahava","heartHamsa","tree6","tree11"],memorial:["letters","treeMem"]};
 const ANY=["miracle","winetag","mug","heartHamsa","tote","doorsign","dreidel","weddingSign","baby","tree6","ahava","box"];
 const HANUKKAH_OCC=["table","host","teacher"];
-function parseBudget(t){const m=t.match(/\$\s*(\d{1,4})|(\d{1,4})\s*(\$|dollars|bucks)|(?:spend|budget|around|about|under|less than|max|up to|closer to)\s*\$?\s*(\d{1,4})/);if(!m)return null;if(m[4]){const rest=t.slice(m.index+m[0].length);if(/^\s*(letters?|inch|inches|in |"|names?|kids?|grandkids?|children|people|guests?|years?|months?|weeks?|days?|pieces?|of |x|feet|ft|sets?|coasters?|tags?|items?)/.test(rest))return null}const n=+(m[1]||m[2]||m[4]);return n>0?n:null}
+function parseBudget(t){const m=t.match(/\$\s*(\d{1,4})|(\d{1,4})\s*(\$|dollars|bucks)|(?:spend|budget|around|about|under|less than|max|up to|closer to)(?:\s+(?:is|of|was|at|around|about))?\s*\$?\s*(\d{1,4})/);if(!m)return null;if(m[4]){const rest=t.slice(m.index+m[0].length);if(/^\s*(letters?|inch|inches|in |"|names?|kids?|grandkids?|children|people|guests?|years?|months?|weeks?|days?|pieces?|of |x|feet|ft|sets?|coasters?|tags?|items?)/.test(rest))return null}const n=+(m[1]||m[2]||m[4]);return n>0?n:null}
 function byBudget(b){
   const occ=S.occ;const hanukkah=HANUKKAH_OCC.includes(occ)||(S.pick&&/dreidel|miracle|doorsign|shelf/.test(S.pick));
   if(hanukkah&&b>=25&&b<=40){
@@ -387,6 +387,9 @@ function localAnswer0(raw){
   if(S.pick&&has(t,"why would","doesn't make sense","doesnt make sense","not for a","weird","makes no sense")){
     if(S.occ==="kid"){const o=OCC.kid;say("Fair point. For a child, their name on the wall wins. "+o.ask);S.step="tier";setChips(o.tiers.map(([l,k])=>[l,()=>recommend(k,o.why[k])]));return}
     say("Fair point. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
+  }
+  if(has(t,"bigger","larger","big enough","too small","too little","more impact","an impact","make a statement","biggest","largest")){
+    say("Good thinking on size. I'd like to look at the sizes and your budget together. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
   }
   if(S.step==="timing"&&!isQ){
     let k=null;
