@@ -220,7 +220,7 @@ function objPrice(){
   if(low2)ch.push([P[low2].name,()=>{S.pick=low2;say("Good choice. "+P[low2].custom);card(low2);closeLine()}]);
   ch.push(["About $30",()=>byBudget(30)],["Keep my first pick",close]);setChips(ch);
 }
-function objThink(){say("Of course. Is it the price, the timing, or the piece?");S.step="think";setChips([["The price",objPrice],["The timing",objTime],["The piece",pieceSwap]])}
+function objThink(){S.thinkN=(S.thinkN||0)+1;if(S.thinkN>=2){lastQ="I'm still deciding and could use some help choosing.";say("Let's skip the back and forth. Tap below and tell me what you have in mind. Your note is already typed in.");return handoffBtn()}say("Of course. Is it the price, the timing, or the piece?");S.step="think";setChips([["The price",objPrice],["The timing",objTime],["The piece",pieceSwap]])}
 function pieceSwap(){if(!S.occ&&!S.pick)return restart();S.step="after";S.more=0;say("No problem. Same plan, different piece. Here's what else fits.");const before=log.children.length;moreOptionsQuiet();}
 function objTime(){const p=P[S.pick];const nm=p?p.name:"my piece";const hz=(S.occ&&OCC[S.occ].hanukkah)||S.hanu;
   if(S.when==="rush"){say(`This week is tight, and I can rush it. Rush is free, you just pay faster postage. Tap below and I'll confirm the timing for your date.`);lastQ=`I need the ${nm} this week. Can you get it to me in time?`;return handoffBtn()}
@@ -326,6 +326,8 @@ function localAnswer0(raw){
   t=t.replace(/ (dreidles?|driedels?|dreidl|dreidls|draydels?|dredels?|dridels?) /g," dreidel ").replace(/ (hamsah|hamza|chamsa) /g," hamsa ").replace(/ (chanukah|chanukkah|hannukah|hanukah|hannukkah) /g," hanukkah ");
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
+  S.raw=raw;
+  if(has(t,"far away","too early","too soon","plenty of time","a long way","months away","not until","way off","still time","time left")&&(has(t," hanukkah ","dec ","december","nov ","november","holiday","order","deadline","cutoff","cut off")||S.hanu||(S.occ&&OCC[S.occ]&&OCC[S.occ].hanukkah))){S.hanu=true;return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),after()}
   {const r=REL.find(([w])=>t.includes(w));if(r&&S.occ&&(S.step==="timing"||S.step==="tier")){const who=r[0].trim();S.who=who;const o=OCC[S.occ];
     if(S.step==="timing"){say(`For your ${who}, perfect.`);S.noPre=true;return pickOcc(S.occ)}
     say(`For your ${who}, perfect. ${o.ask}`);return setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]])}}
@@ -535,7 +537,11 @@ function catSearch(t){const words=t.replace(/[']/g,"").split(" ").filter(w=>w.le
 function listCard(title,items){S.lastView={type:"list",items};const c=document.createElement("div");c.className="card";c.innerHTML='<div class="eyebrow"></div><div class="list"></div>';c.querySelector(".eyebrow").textContent=title;const L=c.querySelector(".list");
   for(const [n,slug,amt] of items){const r=document.createElement("a");r.className="li";r.href=url(slug);r.target="_blank";r.rel="noopener";const a=document.createElement("span");a.textContent=n;const b=document.createElement("span");b.className="amt";b.textContent="$"+amt;r.append(a,b);L.append(r)}
   log.append(c);scroll()}
-function catAnswer(t){const hits=catSearch(t);if(!hits.length)return false;S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
+const GEN=new Set("work works anything something nothing thing things available option options selection made make makes items item stuff products product choose choice idea ideas gifts present presents people person nice good great best perfect beautiful pretty cute special unique different really very with without would could should looking wondering curious wanted hoping maybe also still even only ever ones other another which while where when whose their there here come comes does doing been being having into onto over under around about after before again from your yours mine some such than then them they these those this that what will just like love want need know tell show help hello thanks please jewish judaica hebrew israel israeli".split(" "));
+let VOC=null;
+function vocab(){if(VOC)return VOC;VOC=new Set();const add=s=>String(s).toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").forEach(w=>{if(w.length>2){VOC.add(w);VOC.add(w.replace(/(es|s)$/,""))}});CAT.forEach(c=>add(c[0]));Object.values(DESC).forEach(d=>add(d[0]+" "+d[1]));Object.keys(SYN).forEach(add);Object.values(SYN).forEach(a=>a.forEach(add));try{Object.values(P).forEach(p=>add((p.name||"")+" "+(p.custom||"")))}catch(e){}return VOC}
+function unmatchedParts(t){if(!/ (and|or|plus) |,|&/.test(" "+t+" "+(S.raw||"")))return [];const V=vocab();const out=[];for(const w of t.replace(/[']/g,"").split(" ")){if(w.length<4||STOP.has(w)||GEN.has(w)||V.has(w)||V.has(w.replace(/(es|s)$/,"")))continue;out.push(w)}return out}
+function catAnswer(t){const hits=catSearch(t);if(!hits.length)return false;if(unmatchedParts(t).length){S.lastCat=null;say("I'm not sure I have all of that. I'd like to check it myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();return true}S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
   say(hits.length===1?(DESC[hits[0][1]]?`${/ (do|does|have|any|got|is there|are there) /.test(t)?"Yes. ":""}${DESC[hits[0][1]][0]}. ${DESC[hits[0][1]][1][0].toUpperCase()+DESC[hits[0][1]][1].slice(1)}. Tap to see it.`:`Yes. The ${hits[0][0]}, from $${hits[0][2]}.${POD.test(hits[0][0])?" Printed and shipped by my print partner.":""} Tap to see it.`):`${has(t,"like","love","what else","show me")?"Great taste. ":/ (do|does|have|any|got|sell|carry|is there|are there) /.test(t)?"Yes. ":""}I have ${hits.length} of those. Tap one to see it.`+(pod?" These are printed and shipped by my print partner.":""));
   listCard(pod?"Printed and shipped for you":"From my shop",hits.slice(0,16));after();return true}
 const GLOSS=[
