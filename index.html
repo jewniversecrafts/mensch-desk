@@ -327,6 +327,16 @@ function localAnswer0(raw){
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
   S.raw=raw;
+  if(has(t,"different size","other size","another size","what sizes","which sizes","what size","size options","sizes do","sizes does","in a smaller","in a larger","smaller size","come in other")){
+    const keys=(S.shown&&S.shown.length?[...new Set(S.shown)]:(S.pick?[S.pick]:[]));const pk=S.pick&&P[S.pick]?P[S.pick]:(keys.length===1?P[keys[0]]:null);
+    if(!pk&&S.lastCat&&S.lastCat.length>1){say("Sizes depend on the piece. Tap one to see every size.");listCard("From my shop",S.lastCat.slice(0,16));return after()}
+    if(!pk){say("Which piece are you looking at? I'll pull up its sizes.");return after()}
+    const d=DESC[pk.slug];const m=(pk.custom||"").match(/\d+x\d+[^.]*(?:\.\d+)?[^.]*/);
+    const SZ=/inch|\d+x\d+|size|small|large/i;
+    if(d&&d[1]&&SZ.test(d[1])){say(`Here are the sizes for the ${pk.name}. ${d[1][0].toUpperCase()+d[1].slice(1)}.`);return after()}
+    if(m&&SZ.test(m[0])){say(`Here are the sizes for the ${pk.name}. ${m[0]}.`);return after()}
+    lastQ=`What sizes does the ${pk.name} come in?`;say("I'd like to check the sizes on that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn()
+  }
   if(has(t,"far away","too early","too soon","plenty of time","a long way","months away","not until","way off","still time","time left")&&(has(t," hanukkah ","dec ","december","nov ","november","holiday","order","deadline","cutoff","cut off")||S.hanu||(S.occ&&OCC[S.occ]&&OCC[S.occ].hanukkah))){S.hanu=true;return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),after()}
   {const r=REL.find(([w])=>t.includes(w));if(r&&S.occ&&(S.step==="timing"||S.step==="tier")){const who=r[0].trim();S.who=who;const o=OCC[S.occ];
     if(S.step==="timing"){say(`For your ${who}, perfect.`);S.noPre=true;return pickOcc(S.occ)}
@@ -366,7 +376,7 @@ function localAnswer0(raw){
     if(S.pick==="letters"||has(t,"letter","name","alphabet")){say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a WhatsApp.");S.pick="safari";card("safari");card("farm");closeLine();return}
   }
   if(S.lastIntent==="compare"&&/^ (no|nope|i meant|i mean)/.test(t)){const h=catSearch(t);if(h.length>1)return compareItems(h.slice(0,4))}
-  if(has(t,"difference","differ","compare"," vs ","versus","which one","which is better")&&(S.shown||[]).length>1){
+  if(has(t,"difference"," differ ","compare"," vs ","versus","which one","which is better")&&(S.shown||[]).length>1){
     const NOUN={plaque:["plaque","sign"],plaques:["plaque","sign"],sign:["sign","plaque"],signs:["sign","plaque"],box:["box"],tree:["tree"],trees:["tree"],letter:["letter"],letters:["letter"],coaster:["coaster"],coasters:["coaster"],hamsa:["hamsa"],hamsas:["hamsa"]};
     let ws=[];for(const w of t.split(" "))if(NOUN[w])ws.push(...NOUN[w]);
     const seen=new Set();const sh=(S.shown||[]).filter(k=>P[k]&&!seen.has(P[k].name)&&seen.add(P[k].name));
@@ -375,10 +385,10 @@ function localAnswer0(raw){
     if(refersShown&&fk.length>1&&fk.includes("mitzvahSign")&&fk.includes("mitzvahTree")){lastBot="";say("They're the same layered plaque in two designs. Same sizes and prices, 6x6 $70, 9x9 $101, 11x11 $146. Both carry their name, parsha, and date.\nOne is the Mid-Century Modern Star of David.\nThe other is the Tree of Life, with geometric Stars of David and the name on a wood band across the center.\nOn both, you pick the colors for the top and bottom layers.\nWhich design is catching your eye?");S.lastIntent="compare";return setChips([["Mid-Century Modern Star of David",()=>{S.pick="mitzvahSign";say("Great pick. "+P.mitzvahSign.custom);card("mitzvahSign");closeLine()}],["Tree of Life",()=>{S.pick="mitzvahTree";say("Great pick. "+P.mitzvahTree.custom);card("mitzvahTree");closeLine()}]])}
     if(refersShown&&fk.length>1){const ks=fk.slice(0,3);lastBot="";say("Here's the quick difference.\n"+ks.map(k=>`${P[k].name}, ${P[k].price}. ${P[k].custom}`).join("\n")+"\nWhich one is catching your eye?");S.lastIntent="compare";return setChips(ks.map(k=>[P[k].name,()=>{S.pick=k;say("Great pick. "+P[k].custom);card(k);closeLine()}]))}
   }
-  if(has(t,"difference","differ","compare"," vs ","versus")&&!has(t,"between them","between these","these two","those two")){const h2=catSearch(t);if(h2.length>1)return compareItems(h2.slice(0,4))}
+  if(has(t,"difference"," differ ","compare"," vs ","versus")&&!has(t,"between them","between these","these two","those two")){const h2=catSearch(t);if(h2.length>1)return compareItems(h2.slice(0,4))}
   if(glossAnswer(t))return;
   if(has(t," hang"," hanger","mount it","wall hanging","frame it","framing")&&isQ0(t))return say("Wall pieces come ready to hang. At checkout you can ask for a hanger on the back, or tell me if you plan to frame it."),after();
-  if(has(t,"each one","difference","differ","compare","which one","which is better"," vs ","versus","between them","between these")&&compareShown())return;
+  if(has(t,"each one","difference"," differ ","compare","which one","which is better"," vs ","versus","between them","between these")&&compareShown())return;
   if(has(t,"layered","made of","material"," thick"," thin ","thinner","flimsy","sturdy","fragile","delicate","how heavy","what kind of wood","is it wood","are they wood","all wood","plastic","acrylic")&&materialShown())return;
   const HANU=/c?h+an+[aeiu]*k+[aeiu]*k*[aeiu]*h?/.test(t);
   if(HANU)S.hanu=true;
