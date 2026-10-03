@@ -350,6 +350,9 @@ function localAnswer0(raw){
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
   S.raw=raw;
+  if((S.engShown||has(t,"english"))&&has(t,"letter","alphabet")&&has(t,"plain","without any","without design","no animal","no design","no cutout","no picture","no image","just the letters","just letters","solid","blank","simple","regular","block")||(S.engShown&&has(t,"in english","not in hebrew","no not in hebrew","english please","english only"))){
+    lastQ="Do you make plain English wood letters, without the animal cutouts?";S.plainN=(S.plainN||0)+1;say(S.plainN>1?"Plain English it is. I don't list those, so I'd like to look into it myself. Tap below and send it over. Your note is already typed in.":"Plain English letters aren't something I list. Mine have animals cut out of them. I'd like to check what I can do. Tap below and send me what you have in mind. Your question is already typed in.");return handoffBtn();
+  }
   if(S.pick&&has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
     say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
   }
@@ -403,7 +406,7 @@ function localAnswer0(raw){
   if(has(t,"english")&&(S.pick==="letters"||S.occ==="memorial"||!has(t,"letter"))&&!has(t,"hebrew or english","english or hebrew")){
     if(S.occ==="memorial"&&S.rejected&&S.rejected.has("treeMem")){say("My English letters have animals cut into them, so they're not right for this. Tap below and let's talk about what would feel right.");return handoffBtn()}
     if(S.occ==="memorial"){say("My English letters have animals cut into them, so they're not right for this. For a memorial in English, I'd go with the Tree of Life. Their name and dates in English, $88.");S.pick="treeMem";card("treeMem");return after()}
-    if(S.pick==="letters"||has(t,"letter","name","alphabet")){say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a WhatsApp.");S.pick="safari";card("safari");card("farm");closeLine();return}
+    if(S.pick==="letters"||has(t,"letter","name","alphabet")){say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a WhatsApp.");S.engShown=true;S.pick="safari";card("safari");card("farm");closeLine();return}
   }
   if(S.lastIntent==="compare"&&/^ (no|nope|i meant|i mean)/.test(t)){const h=catSearch(t);if(h.length>1)return compareItems(h.slice(0,4))}
   if(has(t,"difference"," differ ","compare"," vs ","versus","which one","which is better")&&(S.shown||[]).length>1){
@@ -485,7 +488,7 @@ function localAnswer0(raw){
   if(has(t,"letter","alphabet","abc","initial","monogram")){
     if(has(t,"english","abc","alphabet","initial","monogram"," a z ")){
       say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a message.");
-      S.pick="safari";card("safari");card("farm");closeLine();return;
+      S.engShown=true;S.pick="safari";card("safari");card("farm");closeLine();return;
     }
     if(has(t,"color","colour"))return say("More than 25 colors, same price. You pick from the color charts on the listing at checkout."),after();
     if(has(t,"look","picture","photo","what are","like"))return say("Wood Hebrew letters, each cut as its own piece. You arrange, frame, or mount them. The listing photos show them best."),(S.pick="letters",card("letters"),after());
