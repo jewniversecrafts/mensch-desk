@@ -151,11 +151,11 @@ function say(text,who="bot"){if(who==="bot"){if(text===lastBot&&/\?$/.test(text)
 let LASTCHIPS=null;
 function resumeChips(){if(LASTCHIPS&&LASTCHIPS.length)setChips(LASTCHIPS);else after()}
 function setChips(list){LASTCHIPS=list;chips.replaceChildren();for(const [label,fn] of list){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>{if(busy)return;say(label,"me");chips.replaceChildren();fn();logChat("TAP",label)};chips.append(b)}scroll()}
-function card(key,extra){
+function card(key,extra,eyebrow){
   if(S.rejected&&S.rejected.has(key))return;
   const p=P[key];const c=document.createElement("div");c.className="card";
   c.innerHTML='<div class="eyebrow">My pick for you</div><h2></h2><div class="price"></div><div class="sub"></div><div class="row"><a class="btn primary" target="_blank" rel="noopener">Order this piece</a><a class="btn ghost" target="_blank" rel="noopener">WhatsApp me</a></div><div class="note" hidden></div>';
-  c.querySelector("h2").textContent=p.name;c.querySelector(".price").textContent=p.price;c.querySelector(".sub").textContent=extra||p.custom;
+  if(eyebrow)c.querySelector(".eyebrow").textContent=eyebrow;c.querySelector("h2").textContent=p.name;c.querySelector(".price").textContent=p.price;c.querySelector(".sub").textContent=extra||p.custom;
   const a=c.querySelectorAll("a");a[0].href=url(p.slug);msgLink(a[1],`Hi Melissa, I have a question about the ${p.name}. `,c.querySelector(".note"));S.shown=[key,...(S.shown||[])].slice(0,6);if(!S.lastView||S.lastView.type!=="cards"||S.lastView.fresh)S.lastView={type:"cards",keys:[]};S.lastView.keys.unshift(key);S.lastView.fresh=false;setTimeout(()=>{if(S.lastView)S.lastView.fresh=true},0);log.append(c);scroll();
 }
 
@@ -211,6 +211,10 @@ function timing(t){
 function unsurePick(){const u=UNSURE[S.occ];if(!u){say("No problem. Tell me a budget and I'll pick.");return setChips([["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)]])}
   say("No problem. "+u[1]);recommend(u[0],"");}
 function bigTree(){say("I love that. Seven or more names needs a custom layout. Send me their names and I'll get right back to you.");handoffBtn()}
+function lookup(key){
+  S.pick=key;S.step="after";const p=P[key],d=DESC[p.slug];
+  say(`Here it is. ${d[0].replace(/\.$/,"")}. ${d[1]}.`+(key==="dreidel"||key==="dreidelName"?" I'm making 20 sets this year.":""));card(key,"Tap Order this piece to see photos and every option.","From my shop");objections();
+}
 function recommend(key,why){
   S.pick=key;S.step="after";const p=P[key];
   let t=`I'd go with the ${p.name}, ${p.price}. ${why||""}`.trim();
@@ -496,7 +500,7 @@ function localAnswer0(raw){
   if(!occWords&&catSearch(t).length>1&&catAnswer(t))return;
   // products by name
   const prod=[["dreidel","dreidel"],["coaster set","dreidel"],["miracle","miracle"],["door","doorsign"],["shelf","shelf"],["menorah","shelf"],["wine","winetag"],["keepsake box","box"],["tree of life","tree"],["ahava","ahava"],["jerusalem","jerusalem"],["hamsa","heartHamsa"],["wedding sign","weddingSign"],["baby stats","baby"],["name sign","baby"],["honey plate","honeyplate"],["mug","mug"],["tote","tote"],["mitzvah sign","mitzvahSign"]];
-  for(const [w,k] of prod)if(t.includes(w))return recommend(k,"");
+  for(const [w,k] of prod)if(t.includes(w)){if(P[k]&&DESC[P[k].slug])return lookup(k);return recommend(k,"")}
   // occasions
   const occ=[["table","table"],[" host","host"],["teacher","teacher"],["mitzvah","mitzvah"],["bnai","mitzvah"],["wedding","wedding"],["engag","wedding"],["anniversary","wedding"],["baby","baby"],["newborn","baby"],["nursery","baby"],["housewarming","home"],["new home","home"],["new house","home"],["birthday","birthday"],["grandparent","grand"],["memorial","memorial"],["shiva","memorial"],["passed away","memorial"],["lost my","memorial"],["lost our","memorial"],["yahrzeit","memorial"],["unveiling","memorial"],["loss of","memorial"],["in memory","memorial"],["condolence","memorial"]];
   const wb=w=>new RegExp("(^|[^a-z])"+w.trim().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).test(t);
