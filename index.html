@@ -473,6 +473,7 @@ function localAnswer0(raw){
     return say("Got it. "+o.ask),setChips(o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]));
   }
   if(S.step==="think"){if(has(t,"piece","item","product","design","style","look"))return pieceSwap();if(has(t,"price","cost","money","budget","expensive"))return objPrice();if(has(t,"timing","time","date","when","deadline"))return objTime();}
+  if(whyPrice(t))return;
   if(S.pick&&!isQ||S.pick&&has(t,"more than","expensive","think about","in time","return","don't like","dont like","different","ready","order it","buy")){
     if(S.pick==="letters"){const m=t.match(/(\d{1,2})\s*(inch|in |"|”)/)||t.match(/ (\d{1,2}) /);const sz=m&&+m[1];const L={3:3.99,4:4.99,5:6.99,6:8.99,7:9.99,8:10.99,9:11.99,10:12.99};
       if(sz&&L[sz]){say(`${sz} inch letters are $${L[sz]} each. A 4 letter name is $${(L[sz]*4).toFixed(2)}. Pick one of 25+ colors at checkout.`);card("letters");closeLine();return}}
@@ -536,6 +537,7 @@ function localAnswer0(raw){
     return say("Happy Hanukkah. Who's it for?"),setChips([["My own table",()=>pickOcc("table")],["A host",()=>pickOcc("host")],["A child",()=>pickOcc("kid")],["A teacher",()=>pickOcc("teacher")]]);
   }
   if(has(t,"gift","present","something for"))return say("Oh, fun. Who's it for, and what's the occasion?"),setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]));
+  if(whyPrice(t))return;
   if(has(t,"price","cost","how much")&&catSearch(t).length&&catSearch(t).length<4&&catAnswer(t))return;
   if(has(t,"price","cost","how much","expensive","cheap","budget"))return pick?objPrice():(say("Pieces start at $5. Who's it for, and what's the occasion?"),setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])));
   if(catAnswer(t))return;
@@ -544,6 +546,26 @@ function localAnswer0(raw){
   say(isQ?"Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.":"Got it. I want to get this one just right, so tap below and send it to me on WhatsApp. Your message is already typed in.");handoffBtn();
 }
 const COLOR_ONLY=["heartHamsa","ahava"];
+function whyPrice(t){
+  if(!has(t," why "," how come ","justify","worth it","what makes it","what do i get"))return false;
+  if(!has(t,"cost","price","expensive","much","$","pricey","pricy","charge"))return false;
+  const low=n=>n.toLowerCase().replace(/[']/g,"");
+  let item=CAT.filter(c=>t.includes(low(c[0]))).sort((a,b)=>b[0].length-a[0].length)[0];
+  if(!item){const h=catSearch(t);if(h.length)item=h[0]}
+  if(!item&&S.pick&&P[S.pick])item=CAT.find(c=>c[1]===P[S.pick].slug);
+  if(!item)return false;
+  const slug=item[1];const d=DESC[slug];
+  const BY={
+   "personalized-tree-of-life-keepsake":"It's my top piece. A 12 inch layered Tree of Life with a hand-painted background in blue hues. Their names and date are engraved around the edge, and it's made to order. You approve a proof first, and shipping is free in the US.",
+   "tree-of-life-judaica-wall-plaque":"Each one is a round layered plaque, laser cut and engraved with their names and date. You approve a proof first, and shipping is free in the US.",
+   "custom-wood-hebrew-dreidel-set":"You get 8 dreidel coasters plus an engraved base, all made to order. The family name version adds the name on the base. You approve a proof first, and shipping is free in the US."
+  };
+  const why=BY[slug]||((d?d[0].replace(/\.$/,"")+". ":"")+"I design it and laser cut it to order in my Richmond studio. Shipping is free in the US.");
+  S.lastCat=[item];
+  say("Fair question. "+why);
+  listCard("From my shop",[item]);
+  if(slug==="personalized-tree-of-life-keepsake"){const w=CAT.find(c=>c[1]==="tree-of-life-judaica-wall-plaque");if(w){say("Want something smaller? Tree of Life Wall Art starts at $88 and fits up to 2 names.");listCard("From my shop",[w])}}
+  after();return true}
 function persAnswer(){
   const keys=(S.shown&&S.shown.length?S.shown:(S.pick?[S.pick]:[]));
   if(!keys.length){say("Lots of my pieces carry a name or date. Signs, plaques, boards, Tree of Life, and the Dreidel set. Who's it for?");after();return}
@@ -600,8 +622,8 @@ const GEN=new Set("work works anything something nothing thing things available 
 let VOC=null;
 function vocab(){if(VOC)return VOC;VOC=new Set();const add=s=>String(s).toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").forEach(w=>{if(w.length>2){VOC.add(w);VOC.add(w.replace(/(es|s)$/,""))}});CAT.forEach(c=>add(c[0]));Object.values(DESC).forEach(d=>add(d[0]+" "+d[1]));Object.keys(SYN).forEach(add);Object.values(SYN).forEach(a=>a.forEach(add));try{Object.values(P).forEach(p=>add((p.name||"")+" "+(p.custom||"")))}catch(e){}return VOC}
 function unmatchedParts(t){if(!/ (and|or|plus) |,|&/.test(" "+t+" "+(S.raw||"")))return [];const V=vocab();const out=[];for(const w of t.replace(/[']/g,"").split(" ")){if(w.length<4||STOP.has(w)||GEN.has(w)||V.has(w)||V.has(w.replace(/(es|s)$/,"")))continue;out.push(w)}return out}
-function catAnswer(t){const hits=catSearch(t);if(!hits.length)return false;if(unmatchedParts(t).length){S.lastCat=null;say("I'm not sure I have all of that. I'd like to check it myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();return true}S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
-  say(hits.length===1?(DESC[hits[0][1]]?`${/ (do|does|have|any|got|is there|are there) /.test(t)?"Yes. ":""}${DESC[hits[0][1]][0]}. ${DESC[hits[0][1]][1][0].toUpperCase()+DESC[hits[0][1]][1].slice(1)}. Tap to see it.`:`Yes. The ${hits[0][0]}, from $${hits[0][2]}.${POD.test(hits[0][0])?" Printed and shipped by my print partner.":""} Tap to see it.`):`${has(t,"like","love","what else","show me")?"Great taste. ":/ (do|does|have|any|got|sell|carry|is there|are there) /.test(t)?"Yes. ":""}I have ${hits.length} of those. Tap one to see it.`+(pod?" These are printed and shipped by my print partner.":""));
+function catAnswer(t){let hits=catSearch(t);if(!hits.length)return false;{const lo=n=>n.toLowerCase().replace(/[']/g,'');const ex=hits.filter(c=>t.includes(lo(c[0])));const ex2=CAT.filter(c=>t.includes(lo(c[0]))).sort((a,b)=>b[0].length-a[0].length);if(ex.length===1)hits=ex;else if(ex2.length&&hits.some(h=>h[1]===ex2[0][1]))hits=[ex2[0]]}if(unmatchedParts(t).length){S.lastCat=null;say("I'm not sure I have all of that. I'd like to check it myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();return true}S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
+  say(hits.length===1?(DESC[hits[0][1]]?`${/ (do|does|have|any|got|is there|are there) /.test(t)?"Yes. ":""}${DESC[hits[0][1]][0]}. ${DESC[hits[0][1]][1][0].toUpperCase()+DESC[hits[0][1]][1].slice(1)}. Tap to see it.`:`Yes. The ${hits[0][0]}, from $${hits[0][2]}.${POD.test(hits[0][0])?" Printed and shipped by my print partner.":""} Tap to see it.`):`${has(t,"like","love","what else","show me")?"Great taste. ":/ (do|does|have|any|got|sell|carry|is there|are there) /.test(t)?"Yes. ":""}Here are ${hits.length} that fit. Tap one to see it.`+(pod?" These are printed and shipped by my print partner.":""));
   listCard(pod?"Printed and shipped for you":"From my shop",hits.slice(0,16));after();return true}
 const GLOSS=[
  [["lone soldier"],"A lone soldier serves in the Israel Defense Forces without immediate family in Israel. Many volunteer from abroad."],
