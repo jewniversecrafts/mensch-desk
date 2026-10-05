@@ -546,6 +546,7 @@ function localAnswer0(raw){
   if(catAnswer(t))return;
   if(!isQ&&S.pick){say(S.pick==="letters"?"Perfect. What size letters, 3 inch up to 10 inch?":"Got it. Ready to order, or want to see something else?");return after()}
   if(!isQ&&S.step==="tier"&&S.occ){const o=OCC[S.occ];say("Got it. "+o.ask);return setChips(o.tiers.map(([l,k])=>[l,()=>k==="HANDOFF"?bigTree():recommend(k,o.why[k])]))}
+  if(!isQ&&raw.trim().length<25&&!/\d/.test(raw)){say("Ha, I like where your head is at. Who are we shopping for, and what's the occasion?");return occChips()}
   say(isQ?"Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.":"Got it. I want to get this one just right, so tap below and send it to me on WhatsApp. Your message is already typed in.");handoffBtn();
 }
 const COLOR_ONLY=["heartHamsa","ahava"];
@@ -582,6 +583,9 @@ function pkOfItem(it,forName){if(!it)return null;if(forName&&it[1]==="custom-woo
 function occChips(){setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}
 function sweep(t){
   const tt=t.trim();const low=n=>n.toLowerCase().replace(/[']/g,"");
+  if(/^(hi|hello|hey|hiya|shalom)?,? ?(how are you|how r u|how are you doing|how are you today|how[' ]?s it going|how is it going|how[' ]?s your day|how are things|how have you been|what[' ]?s up|sup)( today| doing)?$/.test(tt)){say("Doing great, thanks for asking. I'm in my element when there's a gift to find. Who are we shopping for, and what's the occasion?");occChips();return true}
+  if(/^(shabbat shalom|good shabbos|gut shabbos|shabbos|chag sameach|chag urim sameach|happy hanukkah|happy chanukah|shana tova|shanah tovah|mazel tov)( to you| everyone| to all)?$/.test(tt)){const g=/hanukkah|chanukah|urim/.test(tt)?"Happy Hanukkah to you too.":/shana|shanah/.test(tt)?"Shana tova to you too.":/mazel/.test(tt)?"Mazel tov, and thank you.":/chag/.test(tt)?"Chag sameach to you too.":"Shabbat Shalom to you too.";say(g+" Who are we shopping for, and what's the occasion?");occChips();return true}
+  if(!S.pick&&!S.step&&/^(ok|okay|cool|nice|wow|lol|haha|hahaha|awesome|love it|sounds good|great|perfect|neat|oh|ah|hmm|interesting|fun)$/.test(tt)){say("Ha, I like it. Who are we shopping for, and what's the occasion?");occChips();return true}
   if(/^(hi|hello|hey|hiya|shalom|good (morning|afternoon|evening))( there)?$/.test(tt)){say("Shalom. Who are we shopping for, and what's the occasion?");occChips();return true}
   if(/^(thanks|thank you|thx|ty|thank you so much|thanks so much|thanks a lot)$/.test(tt)){say("Anytime. Questions go straight to me.");after();return true}
   if(has(t,"are you a bot","are you real","are you ai","are you a person","are you human","is this a bot","is this ai")){say("I'm the Mensch at the Desk, the shop's digital helper. No coffee breaks, no kvetching, and I will happily talk gifts all day. Melissa reads these chats, and the tricky ones go straight to her.");handoffBtn();return true}
