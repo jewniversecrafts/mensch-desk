@@ -568,7 +568,9 @@ function whyPrice(t){
   after();return true}
 function persAnswer(){
   const keys=(S.shown&&S.shown.length?S.shown:(S.pick?[S.pick]:[]));
-  if(!keys.length){say("Lots of my pieces carry a name or date. Signs, plaques, boards, Tree of Life, and the Dreidel set. Who's it for?");after();return}
+  const mean=/ (what is|what s|whats|what does|meaning|mean) /.test(" "+(S.raw||"").toLowerCase().replace(/[^a-z0-9 ]/g," ")+" ");
+  if(!keys.length){say((mean?"It means your name or date goes right on the piece. ":"")+"Lots of my pieces carry a name or date. Signs, plaques, boards, Tree of Life, and the Dreidel set. Who's it for?");setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]));return}
+  if(mean)say("It means your name or date goes right on the piece.");
   const yes=[],color=[],ask=[];
   for(const k of keys){const p=P[k];if(p.name_cta||p.memorial)yes.push(p.name);else if(COLOR_ONLY.includes(k))color.push(p.name);else ask.push(p.name)}
   const parts=[];
