@@ -226,6 +226,7 @@ function lookup(key){
 }
 function recommend(key,why){
   S.pick=key;S.step="after";const p=P[key];
+  S.lastWhy=why||"";
   let t=`I'd go with the ${p.name}, ${p.price}. ${why||""}`.trim();
   if(key==="dreidel"||key==="dreidelName")t+=" I'm making 20 sets this year.";
   if(key==="letters")t+=" What size, 3 inch up to 10 inch?";
@@ -354,11 +355,12 @@ const has=(t,...w)=>w.some(x=>t.includes(x));
 function localAnswer(raw){try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
 function localAnswer0(raw){
   let t=" "+raw.toLowerCase().replace(/[^a-z0-9$' ]/g," ")+" ";
-  const REL=[["sister","she"],["brother","he"],[" mom ","she"],["mother","she"],[" dad ","he"],["father","he"],[" wife","she"],["husband","he"],["friend","they"],[" boss","they"],["coworker","they"],["co-worker","they"],["colleague","they"],["neighbor","they"],[" aunt","she"],["uncle","he"],["cousin","they"],["in-law","they"],["in law","they"],["girlfriend","she"],["boyfriend","he"],["fiance","they"],["rabbi","they"],["cantor","they"],["client","they"],["partner","they"],["mother-in-law","she"],["best friend","they"],["bff","they"]];
+  const REL=[[" sister in law","she"],[" brother in law","he"],[" mother in law","she"],[" father in law","he"],[" daughter in law","she"],[" son in law","he"],["sister","she"],["brother","he"],[" mom ","she"],["mother","she"],[" dad ","he"],["father","he"],[" wife","she"],["husband","he"],["friend","they"],[" boss","they"],["coworker","they"],["co-worker","they"],["colleague","they"],["neighbor","they"],[" aunt","she"],["uncle","he"],["cousin","they"],["in-law","they"],["in law","they"],["girlfriend","she"],["boyfriend","he"],["fiance","they"],["rabbi","they"],["cantor","they"],["client","they"],["partner","they"],["mother-in-law","she"],["best friend","they"],["bff","they"]];
   t=t.replace(/ (dreidles?|driedels?|dreidl|dreidls|draydels?|dredels?|dridels?) /g," dreidel ").replace(/ (hamsah|hamza|chamsa) /g," hamsa ").replace(/ (chanukah|chanukkah|hannukah|hanukah|hannukkah) /g," hanukkah ");
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
   S.raw=raw;
+  if(sweep(t))return;
   if(has(t,"best seller","bestseller","best selling","top seller","top selling","most loved","most popular","whats popular","what s popular","what sells","popular items","popular pieces","people love","people buy")&&!S.pick)return bestSellers();
   if(has(t,"look like","looks like","what does it","what do they look","picture","photo","see it","show me","see a pic","see an image")&&!has(t,"letters color","logo")){
     const k0=S.pick||(S.occ&&UNSURE[S.occ]&&UNSURE[S.occ][0])||null,k1=k0&&lookKey(k0);
@@ -526,7 +528,7 @@ function localAnswer0(raw){
   const KID=["child"," kid "," kids "," son ","daughter","grandson","granddaughter","niece","nephew","toddler"," boy"," girl","teen","little one"];
   const GRANDP=["grandparent","grandma","grandpa","bubbe","savta","zayde","saba","grandmother","grandfather","grandkids names"];
   if(has(t,...GRANDP)&&!same("grand"))return pickOcc("grand");
-  if(has(t,...KID)&&!same("kid"))return pickOcc("kid");
+  if(has(t,...KID)&&!same("kid")&&!/ in law /.test(t))return pickOcc("kid");
   if(!S.occ&&!HANU&&has(t,"for myself","for me ","treat myself","treat for myself","for my home","for my house","my own"))return forMe();
   {const r=REL.find(([w])=>t.includes(w));if(r&&!S.occ){const who=r[0].trim();S.who=who;const unsure=has(t,"don't know","dont know","not sure","no idea","no clue","hard to shop","impossible","tough");
     if(HANU){say(`A Hanukkah gift for your ${who}. ${unsure?"No worries, that's my whole job. ":""}Are you thinking something for their table, or something for their home?`);return setChips([["For their table",()=>pickOcc("host")],["For their home",()=>pickOcc("home")],["Not sure, you pick",()=>{S.occ="host";recommend("dreidelName","Their family name on the base, on their table all eight nights.")}]])}
@@ -552,7 +554,8 @@ function whyPrice(t){
   if(!has(t,"cost","price","expensive","much","$","pricey","pricy","charge")&&!/ \d{2,3} /.test(t))return false;
   const low=n=>n.toLowerCase().replace(/[']/g,"");
   let item=CAT.filter(c=>t.includes(low(c[0]))).sort((a,b)=>b[0].length-a[0].length)[0];
-  if(!item){const h=catSearch(t);if(h.length)item=h[0]}
+  if(!item)item=itemFromText(t,2);
+  if(!item){const h=catSearch(t);const nm=(t.match(/\d+(\.\d+)?/g)||[]).map(Number);const byN=h.filter(c=>nm.some(n=>Math.floor(c[2])===Math.floor(n)));if(byN.length===1)item=byN[0];else if(h.length)item=h[0]}
   if(!item&&S.pick&&P[S.pick])item=CAT.find(c=>c[1]===P[S.pick].slug);
   if(!item)return false;
   const slug=item[1];const d=DESC[slug];
@@ -566,6 +569,49 @@ function whyPrice(t){
   say("Fair question. "+why);
   listCard("From my shop",[item]);
   after();return true}
+
+const GENERICW=new Set("name family date jewish est wood wooden wall art decor layered hebrew the and with for set size sizes inch custom personalized shaped laser cut gift pieces piece".split(" "));
+function itemFromText(t,min){
+  const tw=new Set(t.replace(/[']/g,"").split(" ").filter(w=>w.length>1).map(w=>w.replace(/(es|s)$/,"")));
+  let best=[],top=0;
+  for(const c of CAT){const toks=c[0].toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").filter(w=>w.length>2&&!GENERICW.has(w)).map(w=>w.replace(/(es|s)$/,""));
+    const n=[...new Set(toks)].filter(w=>tw.has(w)).length;
+    if(n>top){top=n;best=[c]}else if(n===top&&n>0)best.push(c)}
+  return (top>=(min||2)&&best.length===1)?best[0]:null}
+function pkOfItem(it,forName){if(!it)return null;if(forName&&it[1]==="custom-wood-hebrew-dreidel-set")return "dreidelName";return Object.keys(P).find(k=>P[k]&&P[k].slug===it[1])||null}
+function occChips(){setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}
+function sweep(t){
+  const tt=t.trim();const low=n=>n.toLowerCase().replace(/[']/g,"");
+  if(/^(hi|hello|hey|hiya|shalom|good (morning|afternoon|evening))( there)?$/.test(tt)){say("Shalom. Who are we shopping for, and what's the occasion?");occChips();return true}
+  if(/^(thanks|thank you|thx|ty|thank you so much|thanks so much|thanks a lot)$/.test(tt)){say("Anytime. Questions go straight to me.");after();return true}
+  if(has(t,"are you a bot","are you real","are you ai","are you a person","are you human","is this a bot","is this ai")){say("I'm the Mensch at the Desk, a chat helper for the shop. Melissa reads these chats, and questions go straight to her.");handoffBtn();return true}
+  if(has(t,"about yourself","who are you","who is this","who s melissa","who is melissa")){say("I'm the Mensch at the Desk, here to help you find the right piece. Everything is designed and laser cut to order in my Richmond studio.");after();return true}
+  if(has(t,"gift certificate","gift card","gift cert","egift","e gift")){say("Good question. Let me check and get right back to you.");handoffBtn();return true}
+  if(has(t,"free shipping","shipping free","is shipping","shipping cost","shipping fee","shipping charge","cost to ship","cost for shipping","how much is shipping","how much for shipping","how much to ship")&&!has(t,"canada","israel","international","overseas","abroad","uk ","australia")){say("Yes. Shipping is free in the US.");after();return true}
+  if(has(t,"food safe","food grade","food-safe","safe for food","eat off","safe to eat","serve food")){say("Yes. The challah board is finished with food-grade mineral oil after engraving. Hand wash it and re-oil as needed.");after();return true}
+  if(has(t,"rush","expedite","overnight","next day air","faster shipping","need it fast","need it quick")&&!has(t,"why")){say("Rush is always free. You just pay faster postage. Tap below and I'll confirm timing for your date.");handoffBtn();return true}
+  if(has(t,"last day","last date","last chance to order","latest i can order","cutoff","cut off","deadline","how late can","order by when")&&!has(t,"why","how come")){say("Order by Nov 5 for Hanukkah delivery. Orders placed after Nov 5 ship in December.");after();return true}
+  if(has(t,"most expensive","priciest","most pricey","top of the line","splurge","your best piece","fanciest")){say("My top pieces run from $190 to about $250. Who's it for, and what's the occasion?");occChips();return true}
+  if(has(t,"i want to order","ready to order","how do i order","how do i buy","place an order","i want to buy","i d like to order","i would like to order","want to purchase")){
+    if(S.pick&&P[S.pick]){close();return true}
+    say("Happy to. Who's it for? I'll pick the right piece, or tap one below.");occChips();return true}
+  if(S.lastCat&&S.lastCat.length>1&&!(S.step==="tier"||S.step==="timing")){
+    const ord=has(t,"first one","1st one","the first","top one")?0:has(t,"second one","2nd one","the second")?1:has(t,"third one","3rd one","the third")?2:has(t,"the last one","last one")?S.lastCat.length-1:-1;
+    if(ord>=0&&S.lastCat[ord]){const it=S.lastCat[ord];S.lastCat=[it];const pk=pkOfItem(it);if(pk)S.pick=pk;return catAnswer(" "+low(it[0]).replace(/[^a-z0-9 ]/g," ")+" ")}}
+  if(S.lastCat&&S.lastCat.length>1&&!S.pick&&has(t,"which is bigger","which one is bigger","which is larger","which one is larger","which is biggest","which is the biggest","bigger one","which is smaller","which one is smaller")){say("Sizes depend on the piece. Tap one to see every size.");listCard("From my shop",S.lastCat.slice(0,16));after();return true}
+  if(!S.pick&&S.lastCat&&S.lastCat.length===1){const pk=pkOfItem(S.lastCat[0]);if(pk&&has(t,"expensive","too much","more than","cheaper","pricey","pricy","think about it"))S.pick=pk}
+  if(has(t,"why that one","why this one","why that piece","why this piece","why did you pick","why did you recommend","why do you recommend","why do you suggest","why that")&&S.pick&&P[S.pick]){
+    const cu=P[S.pick].custom||"";say("Here's why. "+(S.lastWhy||(/Printed and shipped/.test(cu)?"It lands right around your budget and suits the occasion you gave me.":cu)||"It fits what you told me."));objections();return true}
+  if(has(t,"size","sizes")&&has(t,"come in","what sizes","which sizes","what size","how big","how large","options")){
+    const it=itemFromText(t,2);if(it){const d=DESC[it[1]];if(d&&d[1]&&/inch|\d+x\d+|size|small|large/i.test(d[1])){const pk=pkOfItem(it);if(pk)S.pick=pk;S.lastCat=[it];say(`Here are the sizes for the ${it[0]}. ${d[1][0].toUpperCase()+d[1].slice(1)}.`);after();return true}}}
+  if(has(t,"picture","photo","see it","what does it look like","what do they look like","image","pic of")&&!has(t,"upload","send you","my photo","my picture","from a photo")){
+    const it=itemFromText(t,2)||CAT.filter(c=>t.includes(low(c[0])))[0];
+    if(it){const pk=pkOfItem(it);S.lastCat=[it];if(pk){S.pick=pk;say("Here is the photo.");card(pk,null,"What it looks like");objections();return true}
+      say("Here it is. Tap to see every photo.");listCard("From my shop",[it]);after();return true}}
+  if(has(t,"add a name","add our","add my","add their","family name","our name","last name","put a name","put our","put my","engrave","name on")&&!has(t,"letter")){
+    const it=itemFromText(t,2);const pk=pkOfItem(it,true);
+    if(it&&pk){S.pick=pk;S.shown=[pk];S.lastCat=[it];persAnswer();return true}}
+  return false}
 function persAnswer(){
   const keys=(S.shown&&S.shown.length?S.shown:(S.pick?[S.pick]:[]));
   const mean=/ (what is|what s|whats|what does|meaning|mean) /.test(" "+(S.raw||"").toLowerCase().replace(/[^a-z0-9 ]/g," ")+" ");
@@ -624,7 +670,7 @@ const GEN=new Set("work works anything something nothing thing things available 
 let VOC=null;
 function vocab(){if(VOC)return VOC;VOC=new Set();const add=s=>String(s).toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").forEach(w=>{if(w.length>2){VOC.add(w);VOC.add(w.replace(/(es|s)$/,""))}});CAT.forEach(c=>add(c[0]));Object.values(DESC).forEach(d=>add(d[0]+" "+d[1]));Object.keys(SYN).forEach(add);Object.values(SYN).forEach(a=>a.forEach(add));try{Object.values(P).forEach(p=>add((p.name||"")+" "+(p.custom||"")))}catch(e){}return VOC}
 function unmatchedParts(t){if(!/ (and|or|plus) |,|&/.test(" "+t+" "+(S.raw||"")))return [];const V=vocab();const out=[];for(const w of t.replace(/[']/g,"").split(" ")){if(w.length<4||STOP.has(w)||GEN.has(w)||V.has(w)||V.has(w.replace(/(es|s)$/,"")))continue;out.push(w)}return out}
-function catAnswer(t){let hits=catSearch(t);if(!hits.length)return false;{const lo=n=>n.toLowerCase().replace(/[']/g,'');const ex=hits.filter(c=>t.includes(lo(c[0])));const ex2=CAT.filter(c=>t.includes(lo(c[0]))).sort((a,b)=>b[0].length-a[0].length);if(ex.length===1)hits=ex;else if(ex2.length&&hits.some(h=>h[1]===ex2[0][1]))hits=[ex2[0]]}if(unmatchedParts(t).length){S.lastCat=null;say("I'm not sure I have all of that. I'd like to check it myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();return true}S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
+function catAnswer(t){let hits=catSearch(t);if(!hits.length)return false;{const lo=n=>n.toLowerCase().replace(/[']/g,'');const ex=hits.filter(c=>t.includes(lo(c[0])));const ex2=CAT.filter(c=>t.includes(lo(c[0]))).sort((a,b)=>b[0].length-a[0].length);if(ex.length===1)hits=ex;else if(ex2.length&&hits.some(h=>h[1]===ex2[0][1]))hits=[ex2[0]];else if(hits.length>1){const it=itemFromText(t,2);if(it&&hits.some(h=>h[1]===it[1]))hits=[it]}}if(unmatchedParts(t).length){S.lastCat=null;say("I'm not sure I have all of that. I'd like to check it myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn();return true}S.lastCat=hits;const pod=hits.every(([n])=>POD.test(n));
   say(hits.length===1?(DESC[hits[0][1]]?`${/ (do|does|have|any|got|is there|are there) /.test(t)?"Yes. ":""}${DESC[hits[0][1]][0]}. ${DESC[hits[0][1]][1][0].toUpperCase()+DESC[hits[0][1]][1].slice(1)}. Tap to see it.`:`Yes. The ${hits[0][0]}, from $${hits[0][2]}.${POD.test(hits[0][0])?" Printed and shipped by my print partner.":""} Tap to see it.`):`${has(t,"like","love","what else","show me")?"Great taste. ":/ (do|does|have|any|got|sell|carry|is there|are there) /.test(t)?"Yes. ":""}Here are ${hits.length} that fit. Tap one to see it.`+(pod?" These are printed and shipped by my print partner.":""));
   listCard(pod?"Printed and shipped for you":"From my shop",hits.slice(0,16));after();return true}
 const GLOSS=[
@@ -643,7 +689,7 @@ const GLOSS=[
  [["chopped liver"],"Chopped liver is the classic deli dish, and the punchline in \"what am I, chopped liver?\""],
 ];
 function isQ0(t){return /\?/.test(t)||/^ (how|what|can|do|does|is|are|will|why|where|who) /.test(t)}
-function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning","mean","who is","explain"," means"))return false;
+function glossAnswer(t){if(itemFromText(t,2))return false;if(!has(t,"what is","what's","whats","what are","meaning","mean","who is","explain"," means"))return false;
   for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
   return false}
 function listChips(){setChips([["Under $25",()=>byBudget(25)],["Around $50",()=>byBudget(50)],["Around $100",()=>byBudget(100)],["Help me choose a gift",()=>{say("Happy to help. Who is it for, and what is the occasion?");setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}]])}
