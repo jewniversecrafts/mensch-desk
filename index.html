@@ -126,7 +126,7 @@ const P={
  mug:{name:"Shalom Y'all Mug",price:"$17.99",slug:"colorful-hamsa-shalom-mug",custom:"Printed and shipped by my print partner."},
 };
 // lower listed tier for "too expensive"
-const LOWER={dreidelName:"dreidel",dreidel:"miracle",shelf:"doorsign",doorsign:"miracle",box:"mitzvahSign",tree11:"tree6",tree6:"heartHamsa",baby:"letters",jerusalem:"heartHamsa",ahava:"heartHamsa",weddingSign:"heartHamsa",mitzvahSign:"letters",treeMem:"letters"};
+const LOWER={keepsake:"tree11",dreidelName:"dreidel",dreidel:"miracle",shelf:"doorsign",doorsign:"miracle",box:"mitzvahSign",tree11:"tree6",tree6:"heartHamsa",baby:"letters",jerusalem:"heartHamsa",ahava:"heartHamsa",weddingSign:"heartHamsa",mitzvahSign:"letters",treeMem:"letters"};
 
 const UNSURE={"kid": ["letters", "Most people go with Hebrew letters. Their name on the wall."], "table": ["dreidel", "Most people start with the Dreidel set for their own table."], "host": ["dreidelName", "The Dreidel set with their family name is my favorite host gift."], "teacher": ["miracle", "Miracle Coasters are the easy teacher win. A name can go on the back."], "mitzvah": ["mitzvahSign", "Most families pick the sign. It's the party piece, then their room."], "wedding": ["tree6", "Tree of Life with both names is my favorite for a couple."], "baby": ["baby", "The Baby Stats sign is the keepsake most people pick."], "home": ["heartHamsa", "A hamsa by the door is the classic new home gift."], "birthday": ["heartHamsa", "The Heart Hamsa is an easy yes, in their favorite color."], "grand": ["tree11", "The 11 inch fits up to 6 names, so every grandkid fits."]};
 const OCC={
@@ -565,7 +565,6 @@ function whyPrice(t){
   S.lastCat=[item];
   say("Fair question. "+why);
   listCard("From my shop",[item]);
-  if(slug==="personalized-tree-of-life-keepsake"){const w=CAT.find(c=>c[1]==="tree-of-life-judaica-wall-plaque");if(w){say("Want something smaller? Tree of Life Wall Art starts at $88 and fits up to 2 names.");listCard("From my shop",[w])}}
   after();return true}
 function persAnswer(){
   const keys=(S.shown&&S.shown.length?S.shown:(S.pick?[S.pick]:[]));
@@ -646,7 +645,7 @@ function glossAnswer(t){if(!has(t,"what is","what's","whats","what are","meaning
   for(const [keys,txt] of GLOSS){if(keys.some(k=>t.includes(k))){say(txt);const hits=CAT.filter(([n])=>keys.some(k=>n.toLowerCase().includes(k)));if(hits.length){listCard(hits.every(([n])=>POD.test(n))?"Printed and shipped for you":"From my shop",hits.slice(0,8))}after();return true}}
   return false}
 function listChips(){setChips([["Under $25",()=>byBudget(25)],["Around $50",()=>byBudget(50)],["Around $100",()=>byBudget(100)],["Help me choose a gift",()=>{say("Happy to help. Who is it for, and what is the occasion?");setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}]])}
-function after(){if(!S.pick&&!S.occ&&S.lastCat&&S.lastCat.length>1&&!(S.step==="timing"||S.step==="tier"))return listChips();S.pick?objections():(S.step==="timing"||S.step==="tier")&&LASTCHIPS&&LASTCHIPS.length?setChips(LASTCHIPS):setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
+function after(){if(!S.pick&&!S.occ&&S.lastCat&&S.lastCat.length&&!(S.step==="timing"||S.step==="tier")){if(S.lastCat.length===1){const pk=Object.keys(P).find(k=>P[k]&&P[k].slug===S.lastCat[0][1]);if(pk){S.pick=pk;return objections()}}return listChips()}S.pick?objections():(S.step==="timing"||S.step==="tier")&&LASTCHIPS&&LASTCHIPS.length?setChips(LASTCHIPS):setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
 const SID=Math.random().toString(36).slice(2,7);let LOGN=0;
 function logChat(kind,text){try{LOGN++;const pg=(document.referrer||location.href).replace(/^https?:\/\//,"").slice(0,60);const msg=`${SID} #${LOGN} | ${kind}: ${text} | BOT: ${(lastBot||"").slice(0,400)} | from: ${pg}`;
   fetch("https://docs.google.com/forms/d/e/1FAIpQLSfOKYWczmlHxFKeAlEAwGhzLctnlvvHehUmIHU672PPLh61NA/formResponse",{method:"POST",mode:"no-cors",body:new URLSearchParams({"entry.2054542687":msg})}).catch(()=>{})}catch(e){}}
