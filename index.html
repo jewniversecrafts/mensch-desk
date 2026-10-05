@@ -359,6 +359,7 @@ function localAnswer0(raw){
   const pick=S.pick&&P[S.pick];
   const same=k=>S.occ===k;
   S.raw=raw;
+  if(has(t,"best seller","bestseller","best selling","top seller","top selling","most loved","most popular","whats popular","what s popular","what sells","popular items","popular pieces","people love","people buy")&&!S.pick)return bestSellers();
   if(has(t,"look like","looks like","what does it","what do they look","picture","photo","see it","show me","see a pic","see an image")&&!has(t,"letters color","logo")){
     const k0=S.pick||(S.occ&&UNSURE[S.occ]&&UNSURE[S.occ][0])||null,k1=k0&&lookKey(k0);
     if(k1){say((LOOK[k1]||P[k1].custom)+" Here is the photo.");card(k0,null,"What it looks like");return (S.occ&&!S.pick)?resumeChips():after()}
