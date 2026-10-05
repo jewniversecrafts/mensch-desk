@@ -549,7 +549,7 @@ function localAnswer0(raw){
 const COLOR_ONLY=["heartHamsa","ahava"];
 function whyPrice(t){
   if(!has(t," why "," how come ","justify","worth it","what makes it","what do i get"))return false;
-  if(!has(t,"cost","price","expensive","much","$","pricey","pricy","charge"))return false;
+  if(!has(t,"cost","price","expensive","much","$","pricey","pricy","charge")&&!/ \d{2,3} /.test(t))return false;
   const low=n=>n.toLowerCase().replace(/[']/g,"");
   let item=CAT.filter(c=>t.includes(low(c[0]))).sort((a,b)=>b[0].length-a[0].length)[0];
   if(!item){const h=catSearch(t);if(h.length)item=h[0]}
