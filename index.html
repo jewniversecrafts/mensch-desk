@@ -633,11 +633,12 @@ function sweep(t){
   if(has(t,"about yourself","who are you","who is this","who s melissa","who is melissa")){say("I'm the Mensch at the Desk, here to help you find the right piece. Everything is designed and laser cut to order in my Richmond studio.");after();return true}
   if(/\b(kippah|kippot|kipa|yarmulkes?|yamakas?|skullcaps?)\b/.test(t)&&!has(t,"keepsake box","storage box","holds kippot","hold kippot","store kippot","keep kippot","where do i put")){
     S.pick="box";say("I don't make or carry kippot. I do make a keepsake box that holds them, along with the speech, cards, and photos.");card("box");return objections(),true}
-  if(/\b(dreidels?|dreidles?|draydels?|menorahs?|menorot|chanukiah|chanukiot|hanukkiah|hanukiyah|chanukkiah|hanukiah)\b/.test(t)
+  if(/\b(dreidels?|dreidles?|draydels?|menorahs?|menorot|chanukiahs?|chanukiot|hanukkiahs?|hanukiyahs?|chanukkiahs?|hanukiahs?)\b/.test(t)
     &&!has(t,"coaster","set "," set","base","family name","miracle","shelf","door","corner","engrav","personaliz","what is","what s","whats","what are","meaning","mean ","explain","who is","nun","gimel","how do you play","how to play","rules")
     &&!(S.pick==="dreidel"||S.pick==="dreidelName")&&!(S.lastCat&&S.lastCat.length===1&&S.lastCat[0][1]==="custom-wood-hebrew-dreidel-set")){
-    const L=["custom-wood-hebrew-dreidel-set","hanukkah-miracle-wood-coaster","hanukkah-door-corner-welcome-sign","modern-hamsa-menorah-shadow-box"].map(sl=>CAT.find(c=>c[1]===sl)).filter(Boolean);
-    say("I don't make dreidels or menorahs. What I do have is a coaster set shaped like dreidels, plus other Hanukkah pieces for your table and your home.");
+    const men=/\b(menorahs?|menorot|chanukiahs?|chanukiot|hanukkiahs?|hanukiyahs?|chanukkiahs?|hanukiahs?)\b/.test(t);
+    const L=(men?["modern-hamsa-menorah-shadow-box","hanukkah-door-corner-welcome-sign"]:["custom-wood-hebrew-dreidel-set","hanukkah-miracle-wood-coaster","hanukkah-door-corner-welcome-sign","modern-hamsa-menorah-shadow-box"]).map(sl=>CAT.find(c=>c[1]===sl)).filter(Boolean);
+    say(men?"I don't make menorahs, and nothing I make can hold a candle. What I do have is layered wood art with menorah images on it, for your shelf or your door.":"I don't make dreidels. What I do have is a coaster set shaped like dreidels, plus other Hanukkah pieces for your table and your home.");
     if(L.length){listCard("From my shop",L);S.lastCat=L}listChips();return true}
   {const ns=notSoldCheck(t);if(ns&&!(S.pick&&has(t,"in time","get here","ship","arrive"))&&!has(t,"letter","name sign","hamsa")){notSold(ns==="That"?"":ns);return true}}
   if(has(t,"think about it","think about this","thinking about it","need to think","let me think","i ll think","i will think","sleep on it","need some time","need more time","not ready yet","not ready to","get back to you","come back later","maybe later","talk to my","ask my husband","ask my wife","ask my")&&!has(t,"letters")){
