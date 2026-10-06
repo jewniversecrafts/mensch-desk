@@ -389,7 +389,7 @@ function localAnswer0(raw){
   if((S.engShown||has(t,"english"))&&has(t,"letter","alphabet")&&has(t,"plain","without any","without design","no animal","no design","no cutout","no picture","no image","just the letters","just letters","solid","blank","simple","regular","block")||(S.engShown&&has(t,"in english","not in hebrew","no not in hebrew","english please","english only"))){
     lastQ="Do you make plain English wood letters, without the animal cutouts?";S.plainN=(S.plainN||0)+1;say(S.plainN>1?"Plain English it is. I don't list those, so I'd like to look into it myself. Tap below and send it over. Your note is already typed in.":"Plain English letters aren't something I list. Mine have animals cut out of them. I'd like to check what I can do. Tap below and send me what you have in mind. Your question is already typed in.");return handoffBtn();
   }
-  if(S.pick&&has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
+  if(has(t,"other than","instead of","besides","rather than","something other","different name","different text","different wording","something different on")&&has(t,"name","text","word","say","engrave","write","date","hebrew","wording","base","inscription")){
     say("Good question. I'd like to check that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");return handoffBtn();
   }
   if((S.page||S.pick)&&has(t,"tell me about","about this","about it","tell me more","more about","describe","what is this","what is it","more details","more info")&&aboutPage())return;
@@ -633,6 +633,10 @@ function sweep(t){
   if(has(t,"are you a bot","are you real","are you ai","are you a person","are you human","is this a bot","is this ai")){say("I'm the Mensch at the Desk, the shop's digital helper. No coffee breaks, no kvetching, and I will happily talk gifts all day. Melissa reads these chats, and the tricky ones go straight to her.");handoffBtn();return true}
   if(has(t,"about yourself","who are you","who is this","who s melissa","who is melissa")){say("I'm the Mensch at the Desk, here to help you find the right piece. Everything is designed and laser cut to order in my Richmond studio.");after();return true}
   {const ns=notSoldCheck(t);if(ns&&!(S.pick&&has(t,"in time","get here","ship","arrive"))&&!has(t,"letter","name sign","hamsa")){notSold(ns==="That"?"":ns);return true}}
+  if(has(t,"think about it","think about this","thinking about it","need to think","let me think","i ll think","i will think","sleep on it","need some time","need more time","not ready yet","not ready to","get back to you","come back later","maybe later","talk to my","ask my husband","ask my wife","ask my")&&!has(t,"letters")){
+    if(!S.pick&&S.lastCat&&S.lastCat.length===1){const pk=pkOfItem(S.lastCat[0]);if(pk)S.pick=pk}
+    if(S.pick&&P[S.pick])return objThink(),true;
+    say("Take your time. When you're ready, tell me who it's for and what the occasion is, and I'll narrow it down.");occChips();return true}
   if(has(t,"gift certificate","gift card","gift cert","egift","e gift")){say("Good question. Let me check and get right back to you.");handoffBtn();return true}
   if(has(t,"free shipping","shipping free","is shipping","shipping cost","shipping fee","shipping charge","cost to ship","cost for shipping","how much is shipping","how much for shipping","how much to ship")&&!has(t,"canada","israel","international","overseas","abroad","uk ","australia")){say("Yes. Shipping is free in the US.");after();return true}
   if(has(t,"food safe","food grade","food-safe","safe for food","eat off","safe to eat","serve food")){say("Yes. The challah board is finished with food-grade mineral oil after engraving. Hand wash it and re-oil as needed.");after();return true}
