@@ -539,7 +539,7 @@ function localAnswer0(raw){
   const occWords=/(^|[^a-z])(teacher|host|hostess|wedding|mitzvah|bnai|birthday|baby|newborn|memorial|shiva|anniversary|engag|housewarming|new home|grandparent|grandma|grandpa|granddaughter|grandson)/.test(t)||REL.some(([w])=>t.includes(w))||/(^|[^a-z])(son|daughter|kid|kids|child|niece|nephew)([^a-z]|$)/.test(t);
   if(!occWords&&catSearch(t).length>1&&catAnswer(t))return;
   // products by name
-  const prod=[["dreidel","dreidel"],["coaster set","dreidel"],["miracle","miracle"],["door","doorsign"],["shelf","shelf"],["menorah","shelf"],["wine","winetag"],["keepsake box","box"],["tree of life","tree"],["ahava","ahava"],["jerusalem","jerusalem"],["hamsa","heartHamsa"],["wedding sign","weddingSign"],["baby stats","baby"],["name sign","baby"],["honey plate","honeyplate"],["mug","mug"],["tote","tote"],["mitzvah sign","mitzvahSign"]];
+  const prod=[["dreidel","dreidel"],["coaster set","dreidel"],["miracle","miracle"],["door","doorsign"],["shelf","shelf"],["wine","winetag"],["keepsake box","box"],["tree of life","tree"],["ahava","ahava"],["jerusalem","jerusalem"],["hamsa","heartHamsa"],["wedding sign","weddingSign"],["baby stats","baby"],["name sign","baby"],["honey plate","honeyplate"],["mug","mug"],["tote","tote"],["mitzvah sign","mitzvahSign"]];
   for(const [w,k] of prod)if(t.includes(w)){if(P[k]&&DESC[P[k].slug])return lookup(k);return recommend(k,"")}
   // occasions
   const occ=[["table","table"],[" host","host"],["teacher","teacher"],["mitzvah","mitzvah"],["bnai","mitzvah"],["wedding","wedding"],["engag","wedding"],["anniversary","wedding"],["baby","baby"],["newborn","baby"],["nursery","baby"],["housewarming","home"],["new home","home"],["new house","home"],["birthday","birthday"],["grandparent","grand"],["memorial","memorial"],["shiva","memorial"],["passed away","memorial"],["lost my","memorial"],["lost our","memorial"],["yahrzeit","memorial"],["unveiling","memorial"],["loss of","memorial"],["in memory","memorial"],["condolence","memorial"]];
@@ -618,7 +618,6 @@ const UNSOLD=[
 ];
 function notSoldCheck(t){
   if(has(t,"wine bottle tag","wine tag","wine bottle tags"))return false;
-  if(has(t,"hanukkah candles","dreidel","menorah")&&!UNSOLD[0][0].test(t))return false;
   for(const [re,label] of UNSOLD){if(re.test(t))return label}
   return false}
 function sweep(t){
@@ -632,6 +631,14 @@ function sweep(t){
   if(/^(thanks|thank you|thx|ty|thank you so much|thanks so much|thanks a lot)$/.test(tt)){say("Anytime. Questions go straight to me.");after();return true}
   if(has(t,"are you a bot","are you real","are you ai","are you a person","are you human","is this a bot","is this ai")){say("I'm the Mensch at the Desk, the shop's digital helper. No coffee breaks, no kvetching, and I will happily talk gifts all day. Melissa reads these chats, and the tricky ones go straight to her.");handoffBtn();return true}
   if(has(t,"about yourself","who are you","who is this","who s melissa","who is melissa")){say("I'm the Mensch at the Desk, here to help you find the right piece. Everything is designed and laser cut to order in my Richmond studio.");after();return true}
+  if(/\b(kippah|kippot|kipa|yarmulkes?|yamakas?|skullcaps?)\b/.test(t)&&!has(t,"keepsake box","storage box","holds kippot","hold kippot","store kippot","keep kippot","where do i put")){
+    S.pick="box";say("I don't make or carry kippot. I do make a keepsake box that holds them, along with the speech, cards, and photos.");card("box");return objections(),true}
+  if(/\b(dreidels?|dreidles?|draydels?|menorahs?|menorot|chanukiah|chanukiot|hanukkiah|hanukiyah|chanukkiah|hanukiah)\b/.test(t)
+    &&!has(t,"coaster","set "," set","base","family name","miracle","shelf","door","corner","engrav","personaliz","what is","what s","whats","what are","meaning","mean ","explain","who is","nun","gimel","how do you play","how to play","rules")
+    &&!(S.pick==="dreidel"||S.pick==="dreidelName")&&!(S.lastCat&&S.lastCat.length===1&&S.lastCat[0][1]==="custom-wood-hebrew-dreidel-set")){
+    const L=["custom-wood-hebrew-dreidel-set","hanukkah-miracle-wood-coaster","hanukkah-door-corner-welcome-sign","modern-hamsa-menorah-shadow-box"].map(sl=>CAT.find(c=>c[1]===sl)).filter(Boolean);
+    say("I don't make dreidels or menorahs. What I do have is a coaster set shaped like dreidels, plus other Hanukkah pieces for your table and your home.");
+    if(L.length){listCard("From my shop",L);S.lastCat=L}listChips();return true}
   {const ns=notSoldCheck(t);if(ns&&!(S.pick&&has(t,"in time","get here","ship","arrive"))&&!has(t,"letter","name sign","hamsa")){notSold(ns==="That"?"":ns);return true}}
   if(has(t,"think about it","think about this","thinking about it","need to think","let me think","i ll think","i will think","sleep on it","need some time","need more time","not ready yet","not ready to","get back to you","come back later","maybe later","talk to my","ask my husband","ask my wife","ask my")&&!has(t,"letters")){
     if(!S.pick&&S.lastCat&&S.lastCat.length===1){const pk=pkOfItem(S.lastCat[0]);if(pk)S.pick=pk}
@@ -736,6 +743,8 @@ const GLOSS=[
  [["chai"],"Chai is Hebrew for life. It's also the number 18."],
  [["tree of life"],"The Tree of Life is a Jewish symbol of Torah and family roots."],
  [["shana tova","shanah tovah","shana tovah"],"Shana Tova means a good year. It's the Rosh Hashanah greeting."],
+ [["dreidel"],"A dreidel is a four sided spinning top played on Hanukkah. Its letters nun, gimel, hey, and shin stand for a great miracle happened there."],
+ [["menorah","chanukiah","hanukkiah"],"A menorah, or hanukkiah, holds the candles lit on Hanukkah, one more each night for eight nights."],
  [["nun","gimel"],"The dreidel letters nun, gimel, hey, and shin stand for a great miracle happened there."],
  [["chopped liver"],"Chopped liver is the classic deli dish, and the punchline in \"what am I, chopped liver?\""],
 ];
