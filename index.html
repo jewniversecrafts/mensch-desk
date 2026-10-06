@@ -758,8 +758,8 @@ function glossAnswer(t){if(itemFromText(t,2))return false;if(!has(t,"what is","w
   return false}
 function listChips(){setChips([["Under $25",()=>byBudget(25)],["Around $50",()=>byBudget(50)],["Around $100",()=>byBudget(100)],["Help me choose a gift",()=>{say("Happy to help. Who is it for, and what is the occasion?");setChips(Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)]))}]])}
 function after(){if(!S.pick&&!S.occ&&S.lastCat&&S.lastCat.length&&!(S.step==="timing"||S.step==="tier")){if(S.lastCat.length===1){const pk=Object.keys(P).find(k=>P[k]&&P[k].slug===S.lastCat[0][1]);if(pk){S.pick=pk;return objections()}}return listChips()}S.pick?objections():(S.step==="timing"||S.step==="tier")&&LASTCHIPS&&LASTCHIPS.length?setChips(LASTCHIPS):setChips([...Object.entries(OCC).map(([k,o])=>[o.label,()=>pickOcc(k)])])}
-const SID=Math.random().toString(36).slice(2,7);let LOGN=0;
-function logChat(kind,text){try{LOGN++;const pg=(document.referrer||location.href).replace(/^https?:\/\//,"").slice(0,60);const msg=`${SID} #${LOGN} | ${kind}: ${text} | BOT: ${(lastBot||"").slice(0,400)} | from: ${pg}`;
+const SID=Math.random().toString(36).slice(2,7);let LOGN=0;let SRC="";try{SRC=(new URLSearchParams(location.search).get("s")||"").replace(/[^a-z0-9]/gi,"").slice(0,12)}catch(e){}
+function logChat(kind,text){try{LOGN++;const pg=(document.referrer||location.href).replace(/^https?:\/\//,"").slice(0,60);const msg=`${SID} #${LOGN} | ${kind}: ${text} | BOT: ${(lastBot||"").slice(0,400)} | from: ${pg} | src: ${SRC}`;
   fetch("https://docs.google.com/forms/d/e/1FAIpQLSfOKYWczmlHxFKeAlEAwGhzLctnlvvHehUmIHU672PPLh61NA/formResponse",{method:"POST",mode:"no-cors",body:new URLSearchParams({"entry.2054542687":msg})}).catch(()=>{})}catch(e){}}
 form.addEventListener("submit",e=>{e.preventDefault();const v=box.value.trim();if(!v||busy)return;box.value="";say(v,"me");chips.replaceChildren();lastQ=v;localAnswer(v);logChat("TYPED",v)});
 
