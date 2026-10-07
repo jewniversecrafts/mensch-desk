@@ -372,7 +372,7 @@ function byBudget(b){
 
 // ---------- Typed questions without AI (works for every viewer) ----------
 const has=(t,...w)=>w.some(x=>t.includes(x));
-const CLOSE_FROM=new Date("2026-11-10T00:00:00-05:00"),CLOSE_TO=new Date("2026-12-01T00:00:00-05:00");
+const CLOSE_FROM=new Date("2026-11-11T00:00:00-05:00"),CLOSE_TO=new Date("2026-12-01T00:00:00-05:00");
 function shopClosed(){const n=new Date();return n>=CLOSE_FROM&&n<CLOSE_TO}
 function closedAnswer(raw){const t=" "+raw.toLowerCase().replace(/[^a-z0-9 ?']/g," ")+" ";const o=/order|buy|purchase|reserve|get one|i'll take|ill take|ready/.test(t);
   say(o?"The shop is closed for new orders until December 1. Requests sent now won't be recognized until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.":"The shop is closed for new orders until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.");handoffBtn()}
