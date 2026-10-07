@@ -190,7 +190,7 @@ function aboutPage(){const c=S.page||(S.pick&&P[S.pick]&&CAT.find(x=>x[1]===P[S.
   const k=Object.keys(P).find(k=>P[k].slug===c[1]);
   if(k){S.pick=k;card(k);objections()}else{listCard("This piece",[c]);setChips([["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;open0()}]])}
   return true}
-function open(){if(shopClosed()){say("Shalom. The shop is closed for new orders until December 1. Questions go straight to me.");handoffBtn();return}const pc=pageCtx();
+function open(){if(shopClosed()){say("Shalom. The shop is closed for new orders until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.");handoffBtn();return}const pc=pageCtx();
   if(pc){S.page=pc;const k=Object.keys(P).find(k=>P[k].slug===pc[1]);if(k)S.pick=k;
     say(`Shalom. I see you're looking at the ${shortName(pc)}. What would you like to know about it?`);
     setChips([["Tell me about this piece",()=>localAnswer("tell me about this piece")],["What sizes does it come in?",()=>localAnswer("what sizes does it come in")],["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;S.pick=null;open0()}]]);return}
@@ -375,7 +375,7 @@ const has=(t,...w)=>w.some(x=>t.includes(x));
 const CLOSE_FROM=new Date("2026-11-10T00:00:00-05:00"),CLOSE_TO=new Date("2026-12-01T00:00:00-05:00");
 function shopClosed(){const n=new Date();return n>=CLOSE_FROM&&n<CLOSE_TO}
 function closedAnswer(raw){const t=" "+raw.toLowerCase().replace(/[^a-z0-9 ?']/g," ")+" ";const o=/order|buy|purchase|reserve|get one|i'll take|ill take|ready/.test(t);
-  say(o?"The shop is closed for new orders until December 1. Requests sent now won't be recognized until December 1. Questions go straight to me.":"The shop is closed for new orders until December 1. Questions go straight to me.");handoffBtn()}
+  say(o?"The shop is closed for new orders until December 1. Requests sent now won't be recognized until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.":"The shop is closed for new orders until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.");handoffBtn()}
 function localAnswer(raw){if(shopClosed())return closedAnswer(raw);try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
 function localAnswer0(raw){
   let t=" "+raw.toLowerCase().replace(/[^a-z0-9$' ]/g," ")+" ";
