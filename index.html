@@ -115,7 +115,7 @@ const P={
  tree6:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 2 names, plus a date. Any language, Hebrew included.",name_cta:true},
  tree11:{name:"Tree of Life Wall Art, 11 inch",price:"$113",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 6 names, plus a date. Any language, Hebrew included.",name_cta:true},
  treeMem:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Their name and dates, in Hebrew, English, or both.",memorial:true},
- letters:{name:"Custom Hebrew Letter Cutouts",price:"$3.99 to $12.99 per letter, by size",slug:"custom-hebrew-name-cutouts-wood",custom:"Wood Hebrew letters, cut as separate pieces. Pick the size and one of 25+ colors.",name_cta:true},
+ letters:{name:"Custom Hebrew Letter Cutouts",price:"$3.99 to $12.99 per letter, by size",slug:"custom-hebrew-name-cutouts-wood",custom:"Wood Hebrew letters, cut as separate pieces. Pick the size, then pick one of 25+ colors from the 2 color photos at the end of the listing.",name_cta:true,noProof:true},
  keepsake:{name:"Tree of Life Keepsake",price:"$190",slug:"personalized-tree-of-life-keepsake",custom:"12 inch layered Tree of Life with a hand-painted background in blue hues, with their names and date engraved around the edge.",name_cta:true},
  safari:{name:"Safari Animals Cutout Wood Letters",price:"from $5 per letter",slug:"floral-cutout-wood-letters-az",custom:"English letters A to Z with safari animals cut out."},
  farm:{name:"Farm Scene Alphabet Letter Cutout",price:"from $5 per letter",slug:"farm-scene-alphabet-letter-cutout",custom:"English letters A to Z with farm animals cut out."},
@@ -190,7 +190,7 @@ function aboutPage(){const c=S.page||(S.pick&&P[S.pick]&&CAT.find(x=>x[1]===P[S.
   const k=Object.keys(P).find(k=>P[k].slug===c[1]);
   if(k){S.pick=k;card(k);objections()}else{listCard("This piece",[c]);setChips([["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;open0()}]])}
   return true}
-function open(){const pc=pageCtx();
+function open(){if(shopClosed()){say("Shalom. The shop is closed for new orders until December 1. Questions go straight to me.");handoffBtn();return}const pc=pageCtx();
   if(pc){S.page=pc;const k=Object.keys(P).find(k=>P[k].slug===pc[1]);if(k)S.pick=k;
     say(`Shalom. I see you're looking at the ${shortName(pc)}. What would you like to know about it?`);
     setChips([["Tell me about this piece",()=>localAnswer("tell me about this piece")],["What sizes does it come in?",()=>localAnswer("what sizes does it come in")],["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;S.pick=null;open0()}]]);return}
@@ -280,8 +280,8 @@ function objTime(){const p=P[S.pick];const nm=p?p.name:"my piece";const hz=(S.oc
   if(S.when==="nov")return say("Yes. Order by Nov 5 and it ships by Nov 11."),objections();
   if(hz)return say("Yes. Order by Nov 5 for Hanukkah delivery. Need it sooner? Rush is free, you just pay faster postage."),objections();
   say("Every piece is made to order and ships the next business day after it's done. Need it by a certain date? Rush is free, you just pay faster postage.");objections()}
-function objReturn(){say("Every piece is made for you, so sales are final. That's why you get a proof first. Nothing gets engraved until you approve it.");objections()}
-function objDiff(){const p=P[S.pick];say(`${p.custom} ${p.memorial||p.name_cta?"I send a proof before I engrave anything. ":""}It's laser cut in my Richmond studio, made to order.`);objections()}
+function objReturn(){say(S.pick==="letters"?"Every piece is made for you, so sales are final unless it arrives damaged or wrong. Then I make it right. Want a proof first? Just ask.":"Every piece is made for you, so sales are final unless it arrives damaged or wrong. Then I make it right. That's why you get a proof first. Nothing gets engraved until you approve it.");objections()}
+function objDiff(){const p=P[S.pick];say(`${p.custom} ${(p.memorial||p.name_cta)&&!p.noProof?"I send a proof before I engrave anything. ":""}It's laser cut in my Richmond studio, made to order.`);objections()}
 function close(){card(S.pick,"Put your name and spelling in the order notes.","Ready when you are","order");closeLine()}
 function closeLine(){const p=P[S.pick];say(p&&p.memorial?"Questions go straight to me.":p&&p.name_cta?"Got a name in mind? Send it my way.":"Questions go straight to me.");setChips([["Start over",restart]])}
 function handoffBtn(){const c=document.createElement("div");c.className="card";const q=lastQ?("Hi Melissa, "+lastQ):"Hi Melissa, I have a question.";c.innerHTML='<div class="eyebrow">Straight to me</div><div class="q"></div><div class="row"><a class="btn primary" target="_blank" rel="noopener">Send on WhatsApp</a></div><div class="note" hidden></div>';c.querySelector(".q").textContent=q;msgLink(c.querySelector("a"),q,c.querySelector(".note"));log.append(c);scroll();setChips([["Start over",restart]])}
@@ -372,7 +372,11 @@ function byBudget(b){
 
 // ---------- Typed questions without AI (works for every viewer) ----------
 const has=(t,...w)=>w.some(x=>t.includes(x));
-function localAnswer(raw){try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
+const CLOSE_FROM=new Date("2026-11-10T00:00:00-05:00"),CLOSE_TO=new Date("2026-12-01T00:00:00-05:00");
+function shopClosed(){const n=new Date();return n>=CLOSE_FROM&&n<CLOSE_TO}
+function closedAnswer(raw){const t=" "+raw.toLowerCase().replace(/[^a-z0-9 ?']/g," ")+" ";const o=/order|buy|purchase|reserve|get one|i'll take|ill take|ready/.test(t);
+  say(o?"The shop is closed for new orders until December 1. Requests sent now won't be recognized until December 1. Questions go straight to me.":"The shop is closed for new orders until December 1. Questions go straight to me.");handoffBtn()}
+function localAnswer(raw){if(shopClosed())return closedAnswer(raw);try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
 function localAnswer0(raw){
   let t=" "+raw.toLowerCase().replace(/[^a-z0-9$' ]/g," ")+" ";
   const REL=[[" sister in law","she"],[" brother in law","he"],[" mother in law","she"],[" father in law","he"],[" daughter in law","she"],[" son in law","he"],["sister","she"],["brother","he"],[" mom ","she"],["mother","she"],[" dad ","he"],["father","he"],[" wife","she"],["husband","he"],["friend","they"],[" boss","they"],["coworker","they"],["co-worker","they"],["colleague","they"],["neighbor","they"],[" aunt","she"],["uncle","he"],["cousin","they"],["in-law","they"],["in law","they"],["girlfriend","she"],["boyfriend","he"],["fiance","they"],["rabbi","they"],["cantor","they"],["client","they"],["partner","they"],["mother-in-law","she"],["best friend","they"],["bff","they"]];
@@ -514,7 +518,7 @@ function localAnswer0(raw){
   if((has(t,"why","how come","so early","so soon"))&&has(t,"nov","cutoff","cut off","deadline","early","soon","order by"))return say("Hanukkah starts Dec 4 this year. I make every piece myself and send a proof first. Nov 5 gives us time to get it right and get it to you."),resumeChips();
   if(has(t,"discount","coupon"," code "," sale "," deal "," promo"))return say("I don't run codes. Every order gets free US shipping and a proof before I engrave."),after();
   if(has(t,"return","refund","exchange"))return objReturn();
-  if(has(t,"proof"))return say("Yes. You get a proof to approve before I engrave anything."),after();
+  if(has(t,"proof"))return say(S.pick==="letters"?"Hebrew letters get a proof if you ask. Just tell me when you order.":"Yes. Every engraved piece gets a proof to approve before I engrave anything. Hebrew letters get one if you ask."),after();
   if(has(t," rush","hurry","asap","overnight","next day"))return say("Rush is always free. You just pay faster postage. Send me a message and I'll confirm timing."),handoffBtn();
   if(has(t,"canada","israel","international","overseas","uk ","england","australia")&&(has(t,"ship","send","deliver","mail","postage"," to ","abroad")||!catSearch(t).length))return say("Yes, I ship abroad. You cover actual postage plus any customs. Send me a message with your country."),handoffBtn();
   if(has(t,"dishwasher","clean"," care "," wash "))return say("Wood gets a dry cloth only, no water. Boards get hand washed and oiled. Nothing goes in the dishwasher."),after();
@@ -527,7 +531,8 @@ function localAnswer0(raw){
       say("My English letters have animals cut out of them. Safari and farm, from $5 a letter. Dinosaurs too, just send me a message.");
       S.engShown=true;S.pick="safari";card("safari");card("farm");closeLine();return;
     }
-    if(has(t,"color","colour"))return say("More than 25 colors, same price. You pick from the color charts on the listing at checkout."),after();
+    if(has(t,"how many","more than","maximum","max ","limit","long name","26"))return say("As many letters as you want. The checkout menu stops at 26, so for more, send me a message and I'll set it up."),handoffBtn();
+    if(has(t,"color","colour"))return say("More than 25 colors, same price. You pick from the 2 color photos at the end of the listing at checkout."),after();
     if(has(t,"look","picture","photo","what are","like"))return say("Wood Hebrew letters, each cut as its own piece. You arrange, frame, or mount them. The listing photos show them best."),(S.pick="letters",card("letters"),after());
     return recommend("letters","");
   }
