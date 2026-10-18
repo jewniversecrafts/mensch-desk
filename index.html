@@ -104,7 +104,37 @@ const SHOP="https://nas.com/jewniversecrafts";
 const WIX="https://www.jewniversecrafts.com/product-page/";
 const W_SIGN="hope-is-mandatory-wall-sign-layered-painted-wood-word-art-jewish-home-decor",W_TEE="hope-is-mandatory-t-shirt-rachel-goldberg-polin-quote-unisex-jewish-tee",W_ONESIE="chai-maintenance-baby-onesie-funny-jewish-baby-bodysuit-bris-baby-shower-gift";
 const WIXSLUG=new Set([W_SIGN,W_TEE,W_ONESIE]);
-const url=s=>WIXSLUG.has(s)?WIX+s:SHOP+"/physical-products/"+s;
+const WIXMAP={
+ "personalized-hebrew-pomegranate-table-accent":"pomegranate-napkin-rings-rosh-hashanah-wood-decor",
+ "custom-hebrew-star-wood-ornament":"star-of-david-napkin-rings-hebrew-or-english-wood",
+ "shana-tovah-apple-wood-decor":"hand-painted-apple-napkin-rings-for-rosh-hashanah",
+ "shanah-tovah-table-set":"shanah-tovah-table-set-personalized-challah-board-napkin-rings-honey-jar",
+ "patriotic-hand-blessing-wall-art":"patriotic-american-flag-hamsa-wood-wall-art-laser-cut-stars-and-stripes",
+ "shabbat-shalom-engraved-serving-board":"shabbat-shalom-engraved-wood-challah-board-jewish-judaica-kitchen-gift",
+ "honeycomb-star-wall-blessing":"honey-plate-with-blessing",
+ "birkat-habayit-hamsa-wood-wall-art":"birkat-habayit-hamsa-wood-wall-art",
+ "personalized-star-of-blessing-plaque":"star-of-david-birkat-habayit-blessing-wall-hanging",
+ "peace-love-prosperity-wall-art":"peace-love-prosperity-wall-art",
+ "blessed-home-wooden-wall-art":"blessed-home-wooden-wall-art",
+ "shanah-tovah-hebrew-acrylic-decor":"shana-tova-acrylic-apple-decoration-rosh-hashanah-hebrew-decor",
+ "chai-pomegranate-hanging-decor":"chag-sameach-acrylic-pomegranate-ornament-jewish-holiday-wall-hanging",
+ "shalom-tiedye-harmony-hoodie":"shalom-yall-peace-sign-floral-hoodie-hebrew-greeting-sweatshirt",
+ "build-your-own-table-tee":"feminist-quote-t-shirt-empowerment-tee-build-own-table-graphic-tee",
+ "pink-zionist-statement-tee":"zionist-t-shirt-pro-israel-pink-bubble-logo-graphic-tee-unisex-jewish-shirt",
+ "lone-soldier-mom-heritage-tee":"mom-of-soldier-t-shirt-finest-raise-soldiers-idf-apparel-cotton-tee",
+ "am-yisrael-chai-heritage-tee":"israel-support-t-shirt-am-yisrael-chai-jewish-pride-tee",
+ "jewish-icons-me-statement-tee":"jewish-pride-t-shirt-abraham-sarah-herzl-golda-me-tee",
+ "this-too-shall-pass-tee":"hebrew-crewneck-t-shirt-this-too-shall-pass-jewish-gift",
+ "hineni-heirloom-hebrew-tee":"jewish-faith-t-shirt-hineni-hebrew-here-i-am-tee",
+ "aishet-chayil-hebrew-tee":"eshet-chayil-hebrew-t-shirt-woman-of-valor-jewish-gift-shirt",
+ "got-hebrew-jewish-humor-tee":"got-hebrew-phrase-icons-t-shirt-hebrew-words-tee-1",
+ "proud-lone-soldier-parent-tee":"us-israel-map-tee-proud-lone-soldier-parent-apparel",
+ "israel-map-wood-wall-art":"israel-map-wall-art-laser-cut-wood-with-flag-inlay",
+ "filigree-star-of-david-wall-art":"layered-basswood-star-of-david-wall-art-stained-judaica",
+ "custom-hebrew-tree-wall-art":"hamsa-wall-art-hebrew-blessing-gold-decor-jewish-home-gift-laser-cut-judaica",
+ "artisan-hamsa-wall-charm":"wooden-hamsa-hand-evil-eye-wall-art-3-sizes-multiple-colors"
+};
+const url=s=>WIXSLUG.has(s)?WIX+s:WIXMAP[s]?WIX+WIXMAP[s]:SHOP+"/physical-products/"+s;
 const P={
  dreidel:{name:"Hanukkah Dreidel Coaster Set",price:"$48, or $58 with your family name on the base",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
  dreidelName:{name:"Dreidel Coaster Set, family name base",price:"$58",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
@@ -182,7 +212,7 @@ function msgLink(a,txt,note){a.href=WA+encodeURIComponent(txt);note.textContent=
 function pastCutoff(){return new Date()>new Date("2026-11-05T23:59:00-05:00")}
 
 function pageCtx(){try{const q=new URLSearchParams(location.search);const u=(q.get("u")||"").toLowerCase(),t0=q.get("t")||"";if(u.indexOf("/product-page/")<0)return null;
-  const seg=u.split("/product-page/")[1].split(/[\/?#]/)[0];let hit=CAT.find(c=>c[1]===seg);
+  const seg=u.split("/product-page/")[1].split(/[\/?#]/)[0];let hit=CAT.find(c=>c[1]===seg||WIXMAP[c[1]]===seg);
   if(!hit){const tk=s=>new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g," ").split(" ").filter(w=>w.length>2));const a=tk(t0.split(/\s[|–—-]\s/)[0]);let best=0,bc=null;
     for(const c of CAT){const b=tk(c[0]);let i=0;a.forEach(w=>{if(b.has(w))i++});const j=i/((a.size+b.size-i)||1);if(j>best){best=j;bc=c}}
     hit=best>=0.5?bc:null}
