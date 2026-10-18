@@ -241,7 +241,7 @@ function aboutPage(){const c=S.page||(S.pick&&P[S.pick]&&CAT.find(x=>x[1]===P[S.
   const k=Object.keys(P).find(k=>P[k].slug===c[1]);
   if(k){S.pick=k;card(k);objections()}else{listCard("This piece",[c]);setChips([["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;open0()}]])}
   return true}
-function open(){if(shopClosed()){say("Shalom. The shop is closed for new orders until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.");handoffBtn();return}const pc=pageCtx();
+function open(){if(shopClosed()){say("Shalom. "+CLOSED_LINE+" Shirts, hats, mugs and other printed items are still open. A gift certificate is on sale now and works from December 1. Questions go straight to me.");setChips([["Shirts, hats and mugs",podGroup]]);handoffBtn();return}const pc=pageCtx();
   if(pc){S.page=pc;const k=Object.keys(P).find(k=>P[k].slug===pc[1]);if(k)S.pick=k;
     say(`Shalom. I see you're looking at the ${shortName(pc)}. What would you like to know about it?`);
     setChips([["Tell me about this piece",()=>localAnswer("tell me about this piece")],["What sizes does it come in?",()=>localAnswer("what sizes does it come in")],["How long to make it?",()=>localAnswer("how long will it take")],["Can I add a name?",()=>localAnswer("can i add a name")],["Help me choose a gift",()=>{S.page=null;S.pick=null;open0()}]]);return}
@@ -463,10 +463,12 @@ function byBudget(b){
 const has=(t,...w)=>w.some(x=>t.includes(x));
 const CLOSE_FROM=new Date("2026-11-11T00:00:00-05:00"),CLOSE_TO=new Date("2026-12-01T00:00:00-05:00");
 const GC_FROM=new Date("2026-10-15T00:00:00-04:00"),GC_TO=new Date("2026-12-01T00:00:00-05:00");function gcOnSale(){const n=new Date();return n>=GC_FROM&&n<GC_TO}
+const CLOSED_LINE="Made to order pieces are closed for new orders until December 1. Even lasers get a fall break. Nov 12 to 30, then back at it on Dec 1.";
+const POD_ASK=/[ ](tee|tees|t-shirt|t-shirts|tshirt|shirt|shirts|hoodie|hoodies|hat|hats|cap|caps|mug|mugs|tote|totes|sticker|stickers|onesie|onesies|bodysuit)[ ?.!,]/;
 function shopClosed(){const n=new Date();return n>=CLOSE_FROM&&n<CLOSE_TO}
 function closedAnswer(raw){const t=" "+raw.toLowerCase().replace(/[^a-z0-9 ?']/g," ")+" ";const o=/order|buy|purchase|reserve|get one|i'll take|ill take|ready/.test(t);
-  say(o?"The shop is closed for new orders until December 1. Requests sent now won't be recognized until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.":"The shop is closed for new orders until December 1. A gift certificate is on sale now and works from December 1. Questions go straight to me.");handoffBtn()}
-function localAnswer(raw){if(shopClosed())return closedAnswer(raw);try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
+  say(o?CLOSED_LINE+" Requests for made to order pieces sent now won't be recognized until December 1. Shirts, hats, mugs and other printed items are still open. A gift certificate is on sale now and works from December 1. Questions go straight to me.":CLOSED_LINE+" Shirts, hats, mugs and other printed items are still open. A gift certificate is on sale now and works from December 1. Questions go straight to me.");setChips([["Shirts, hats and mugs",podGroup]]);handoffBtn()}
+function localAnswer(raw){if(shopClosed()&&!POD_ASK.test(" "+raw.toLowerCase()+" "))return closedAnswer(raw);try{return localAnswer0(raw)}catch(e){console.error(e);say("Great question. I'd like to answer that one myself. Tap below and send it to me on WhatsApp. Your question is already typed in.");handoffBtn()}}
 function localAnswer0(raw){
   let t=" "+raw.toLowerCase().replace(/[^a-z0-9$' ]/g," ")+" ";
   const REL=[[" sister in law","she"],[" brother in law","he"],[" mother in law","she"],[" father in law","he"],[" daughter in law","she"],[" son in law","he"],["sister","she"],["brother","he"],[" mom ","she"],["mother","she"],[" dad ","he"],["father","he"],[" wife","she"],["husband","he"],["friend","they"],[" boss","they"],["coworker","they"],["co-worker","they"],["colleague","they"],["neighbor","they"],[" aunt","she"],["uncle","he"],["cousin","they"],["in-law","they"],["in law","they"],["girlfriend","she"],["boyfriend","he"],["fiance","they"],["rabbi","they"],["cantor","they"],["client","they"],["partner","they"],["mother-in-law","she"],["best friend","they"],["bff","they"]];
