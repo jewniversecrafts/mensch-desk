@@ -277,14 +277,14 @@ function justBecause(){S.occ="birthday";S.step="tier";say("I love a just-because
 function pickOcc(k){
   S.occ=k;const o=OCC[k];
   if(o.hanukkah&&pastCutoff()){say("My Hanukkah order deadline has passed. Send me a message and I'll see what I can do.");handoffBtn();return}
-  if(o.memorial){say("I'm so sorry. When do you need it?");setChips([["Within the week, for shiva",()=>{S.pick="treeMem";S.step="after";say("I can rush it with next day air. You'd cover that postage. Send me a message and I'll confirm the timing.");card("treeMem");objections()}],["For sheloshim, unveiling, or yahrzeit",()=>{recommend("treeMem","A lasting place for their name.")}]]);return}
+  if(o.memorial){say("I'm so sorry. When do you need it?");setChips([["Within the week, for shiva",()=>{S.pick="treeMem";S.step="after";say("I can rush it. A rush is $30 minimum per item for my time, and you cover the faster postage, like next day air. Send me a message and I'll confirm the timing.");card("treeMem");objections()}],["For sheloshim, unveiling, or yahrzeit",()=>{recommend("treeMem","A lasting place for their name.")}]]);return}
   say((!S.noPre&&(S.pre||o.pre)?(S.pre||o.pre)+" ":"")+"When do you need it in hand?");S.pre=null;S.noPre=false;S.step="timing";
   const hz=o.hanukkah||S.hanu;
   setChips([["This week",()=>timing("rush")],["By early November",()=>timing("nov")],[hz?"By Hanukkah, Dec 4":"Later is fine",()=>timing(hz?"hanukkah":"later")]]);
 }
 function timing(t){
   S.when=t;const o=OCC[S.occ];
-  const line={rush:"Every piece is made to order. Rush is free, you just pay faster postage.",nov:"Easy. Orders placed by Nov 5 ship by Nov 11.",hanukkah:"Order by Nov 5 for Hanukkah delivery.",later:"Perfect. Plenty of time to get every detail right."}[t];
+  const line={rush:"Every piece is made to order. A rush is $30 minimum per item for my time, plus the faster postage.",nov:"Easy. Orders placed by Nov 5 ship by Nov 11.",hanukkah:"Order by Nov 5 for Hanukkah delivery.",later:"Perfect. Plenty of time to get every detail right."}[t];
   say(line+"\n"+o.ask);S.step="tier";
   setChips([...o.tiers.map(([l,key])=>[l,()=>key==="HANDOFF"?bigTree():recommend(key,o.why[key])]),["Not sure, you pick",unsurePick]]);
 }
@@ -329,10 +329,10 @@ function pieceSwap(){if(!S.occ&&!S.pick)return restart();S.step="after";S.more=0
 function objTime(){const p=P[S.pick];const nm=p?p.name:"my piece";
   if(p&&p.pod){say("This one is printed and shipped by my print partner, so I can't promise a delivery date. Questions go straight to me.");return objections()}
 const hz=(S.occ&&OCC[S.occ].hanukkah)||S.hanu;
-  if(S.when==="rush"){say(`This week is tight, and I can rush it. Rush is free, you just pay faster postage. Tap below and I'll confirm the timing for your date.`);lastQ=`I need the ${nm} this week. Can you get it to me in time?`;return handoffBtn()}
+  if(S.when==="rush"){say(`This week is tight, and I can rush it. A rush is $30 minimum per item for my time, plus the faster postage. Tap below and I'll confirm the timing for your date.`);lastQ=`I need the ${nm} this week. Can you get it to me in time?`;return handoffBtn()}
   if(S.when==="nov")return say("Yes. Order by Nov 5 and it ships by Nov 11."),objections();
-  if(hz)return say("Yes. Order by Nov 5 for Hanukkah delivery. Need it sooner? Rush is free, you just pay faster postage."),objections();
-  say("Every piece is made to order and ships the next business day after it's done. Need it by a certain date? Rush is free, you just pay faster postage.");objections()}
+  if(hz)return say("Yes. Order by Nov 5 for Hanukkah delivery. Need it sooner? A rush is $30 minimum per item for my time, plus the faster postage."),objections();
+  say("Every piece is made to order and ships the next business day after it's done. Need it by a certain date? A rush is $30 minimum per item for my time, plus the faster postage.");objections()}
 function objReturn(){const pr=P[S.pick];if(pr&&pr.plain){say(pr.pod?"This one is printed to order, so sales are final unless it arrives damaged or wrong. Then I make it right.":"Every piece is made to order, so sales are final unless it arrives damaged or wrong. Then I make it right.");return objections()}say(S.pick==="letters"?"Every piece is made for you, so sales are final unless it arrives damaged or wrong. Then I make it right. Want a proof first? Just ask.":"Every piece is made for you, so sales are final unless it arrives damaged or wrong. Then I make it right. That's why you get a proof first. Nothing gets engraved until you approve it.");objections()}
 function objDiff(){const p=P[S.pick];if(p.diff){say(p.diff);return objections()}say(`${p.custom} ${(p.memorial||p.name_cta)&&!p.noProof?"I send a proof before I engrave anything. ":""}It's laser cut in my Richmond studio, made to order.`);objections()}
 function close(){card(S.pick,(P[S.pick]&&P[S.pick].orderNote)||"Put your name and spelling in the order notes.","Ready when you are","order");closeLine()}
@@ -611,7 +611,7 @@ function localAnswer0(raw){
   if(has(t,"discount","coupon"," code "," sale "," deal "," promo"))return say("I don't run codes. Every order gets free US shipping and a proof before I engrave. Discount codes never apply to the Hope Is Mandatory T-Shirt or Wall Sign, since both raise money for charity."),after();
   if(has(t,"return","refund","exchange"))return objReturn();
   if(has(t,"proof"))return say(S.pick==="letters"?"Hebrew letters get a proof if you ask. Just tell me when you order.":"Yes. Every engraved piece gets a proof to approve before I engrave anything. Hebrew letters get one if you ask."),after();
-  if(has(t," rush","hurry","asap","overnight","next day"))return say("Rush is always free. You just pay faster postage. Send me a message and I'll confirm timing."),handoffBtn();
+  if(has(t," rush","hurry","asap","overnight","next day"))return say("A rush is $30 minimum per item for my time, plus the faster postage. Send me a message and I'll confirm timing."),handoffBtn();
   if(has(t,"canada","israel","international","overseas","uk ","england","australia")&&(has(t,"ship","send","deliver","mail","postage"," to ","abroad")||!catSearch(t).length))return say("Yes, I ship abroad. You cover actual postage plus any customs. Send me a message with your country."),handoffBtn();
   if(has(t,"dishwasher","clean"," care "," wash "))return say("Wood gets a dry cloth only, no water. Boards get hand washed and oiled. Nothing goes in the dishwasher."),after();
   if(has(t,"handmade","hand made","made in","where is it made","who makes"))return say("I design every piece and laser cut it in my Richmond studio. Made to order."),after();
@@ -748,7 +748,7 @@ function sweep(t){
   if(has(t,"gift certificate","gift card","gift cert","egift","e gift")){if(gcOnSale()){say("Yes. The Jewniverse Crafts Gift Certificate comes in $25, $50, $75, $100, or $200. It's emailed to your recipient right away and works from December 1. It never expires.\nBuy the $100 and you get a $10 code. Buy the $200 and you get a $20 code. Both are emailed December 1 and good through January 31, 2027.\nQuestions go straight to me.");after();return true}say("Good question. Let me check and get right back to you.");handoffBtn();return true}
   if(has(t,"free shipping","shipping free","is shipping","shipping cost","shipping fee","shipping charge","cost to ship","cost for shipping","how much is shipping","how much for shipping","how much to ship")&&!has(t,"canada","israel","international","overseas","abroad","uk ","australia")){say("Yes. Shipping is free in the US.");after();return true}
   if(has(t,"food safe","food grade","food-safe","safe for food","eat off","safe to eat","serve food")){say("Yes. The challah board is finished with food-grade mineral oil after engraving. Hand wash it and re-oil as needed.");after();return true}
-  if(has(t,"rush","expedite","overnight","next day air","faster shipping","need it fast","need it quick")&&!has(t,"why")){say("Rush is always free. You just pay faster postage. Tap below and I'll confirm timing for your date.");handoffBtn();return true}
+  if(has(t,"rush","expedite","overnight","next day air","faster shipping","need it fast","need it quick")&&!has(t,"why")){say("A rush is $30 minimum per item for my time, plus the faster postage. Tap below and I'll confirm timing for your date.");handoffBtn();return true}
   if(has(t,"last day","last date","last chance to order","latest i can order","cutoff","cut off","deadline","how late can","order by when")&&!has(t,"why","how come")){say("Order by Nov 5 for Hanukkah delivery. Orders placed Nov 6 to 10 ship by Nov 11, with no Hanukkah delivery promise.");after();return true}
   if(has(t,"most expensive","priciest","most pricey","top of the line","splurge","your best piece","fanciest")){say("My top pieces run from $190 to about $250. Who's it for, and what's the occasion?");occChips();return true}
   if(has(t,"i want to order","ready to order","how do i order","how do i buy","place an order","i want to buy","i d like to order","i would like to order","want to purchase")){
