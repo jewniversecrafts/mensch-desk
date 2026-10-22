@@ -327,7 +327,7 @@ function objPrice(){
   ch.push(["About $30",()=>byBudget(30)],["Keep my first pick",close]);setChips(ch);
 }
 function objThink(){S.thinkN=(S.thinkN||0)+1;if(S.thinkN>=2){lastQ="I'm still deciding and could use some help choosing.";say("Let's skip the back and forth. Tap below and tell me what you have in mind. Your note is already typed in.");return handoffBtn()}say("Of course. Is it the price, the timing, or the piece?");S.step="think";setChips([["The price",objPrice],["The timing",objTime],["The piece",pieceSwap]])}
-function pieceSwap(){if(!S.occ&&!S.pick)return restart();S.step="after";S.more=0;say("No problem. Same plan, different piece. Here's what else fits.");const before=log.children.length;moreOptionsQuiet();}
+function pieceSwap(){if(!S.occ&&!S.pick)return restart();S.step="after";S.more=0;moreOptionsQuiet(true);}
 function objTime(){const p=P[S.pick];const nm=p?p.name:"my piece";
   if(p&&p.pod){say("This one is printed and shipped by my print partner, so I can't promise a delivery date. Questions go straight to me.");return objections()}
 const hz=(S.occ&&OCC[S.occ].hanukkah)||S.hanu;
@@ -791,8 +791,9 @@ function persAnswer(){
   say(parts.join(" "));
   if(ask.length)handoffBtn();else after();
 }
-function moreOptionsQuiet(){const pool=((S.occ&&POOL[S.occ])||ANY).filter(k=>!(k==="tree6"&&S.count>2)&&!(S.rejected&&S.rejected.has(k)));const shown=new Set([S.pick,...(S.shown||[])]);const names=new Set();const picks=pool.filter(k=>!shown.has(k)&&P[k]&&!names.has(P[k].name)&&names.add(P[k].name)).slice(0,3);
-  if(!picks.length){say("That was my best fit for this. Tell me a budget and I'll find another.");return setChips([["About $15",()=>byBudget(15)],["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)],["About $100",()=>byBudget(100)]])}
+function moreOptionsQuiet(intro){const pool=((S.occ&&POOL[S.occ])||ANY).filter(k=>!(k==="tree6"&&S.count>2)&&!(S.rejected&&S.rejected.has(k)));const shown=new Set([S.pick,...(S.shown||[])]);const names=new Set();const picks=pool.filter(k=>!shown.has(k)&&P[k]&&!names.has(P[k].name)&&names.add(P[k].name)).slice(0,3);
+  if(!picks.length){say("That was my best fit for this. Tell me a budget and I'll find another.");return setChips([["About $15",()=>byBudget(15)],["About $30",()=>byBudget(30)],["About $75",()=>byBudget(75)],["About $100",()=>byBudget(100)],["What's new",newPieces],["Most loved pieces",bestSellers]])}
+  if(intro)say("No problem. Same plan, different piece. Here's what else fits.");
   S.pick=picks[0];for(const k of picks)card(k);objections();}
 function moreOptions(){
   const pool=(S.occ&&POOL[S.occ])||ANY;const shown=new Set([S.pick,...(S.shown||[])]);
