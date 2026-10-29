@@ -188,7 +188,7 @@ const P={
  tree6:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 2 names, plus a date. Any language, Hebrew included.",name_cta:true},
  tree11:{name:"Tree of Life Wall Art, 11 inch",price:"$113",slug:"tree-of-life-judaica-wall-plaque",custom:"Up to 6 names, plus a date. Any language, Hebrew included.",name_cta:true},
  treeMem:{name:"Tree of Life Wall Art, 6 inch",price:"$88",slug:"tree-of-life-judaica-wall-plaque",custom:"Their name and dates, in Hebrew, English, or both.",memorial:true},
- letters:{name:"Custom Hebrew Letter Cutouts",price:"$7.99 to $14.99 per letter, by size",slug:"custom-hebrew-name-cutouts-wood",custom:"Wood Hebrew letters, cut as separate pieces. Pick the size, then pick one of 25+ colors from the 2 color photos at the end of the listing.",name_cta:true,noProof:true},
+ letters:{name:"Custom Hebrew Letter Cutouts",price:"$7.99 to $14.99 per letter, by size",slug:"custom-hebrew-name-cutouts-wood",custom:"Wood Hebrew letters, cut as separate pieces. Pick the size and the number of letters, then list your letters in the personalization box. 25+ colors, shown in the listing photos.",name_cta:true,noProof:true},
  keepsake:{name:"Tree of Life Keepsake",price:"$190",slug:"personalized-tree-of-life-keepsake",custom:"12 inch layered Tree of Life with a hand-painted background in blue hues, with their names and date engraved around the edge.",name_cta:true},
  safari:{name:"Safari Animals Cutout Wood Letters",price:"from $5 per letter",slug:"floral-cutout-wood-letters-az",custom:"English letters A to Z with safari animals cut out."},
  farm:{name:"Farm Scene Alphabet Letter Cutout",price:"from $5 per letter",slug:"farm-scene-alphabet-letter-cutout",custom:"English letters A to Z with farm animals cut out."},
@@ -647,7 +647,7 @@ function localAnswer0(raw){
       S.engShown=true;S.pick="safari";card("safari");card("farm");closeLine();return;
     }
     if(has(t,"how many","more than","maximum","max ","limit","long name","26"))return say("As many letters as you want. The checkout menu stops at 26, so for more, send me a message and I'll set it up."),handoffBtn();
-    if(has(t,"color","colour"))return say("More than 25 colors, same price. You pick from the 2 color photos at the end of the listing at checkout."),after();
+    if(has(t,"color","colour"))return say("More than 25 colors, same price. The listing photos show every color. Add your color choice with your letters in the personalization box."),after();
     if(has(t,"look","picture","photo","what are","like"))return say("Wood Hebrew letters, each cut as its own piece. You arrange, frame, or mount them. The listing photos show them best."),(S.pick="letters",card("letters"),after());
     return recommend("letters","");
   }
