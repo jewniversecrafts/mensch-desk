@@ -179,7 +179,8 @@ const WIXMAP={
  "wine-bottle-tag-gift-holiday-kit":"wine-bottle-tag-gift-holiday-kit",
  "hebrew-name-personalized-accent-mug":"proud-zionist-ceramic-mug-11oz-jewish-pride-israel-support-gift"
 };
-const url=s=>WIXSLUG.has(s)?WIX+s:WIXMAP[s]?WIX+WIXMAP[s]:SHOP+"/physical-products/"+s;
+const WIXCAT={"hanukkah-door-corner-welcome-sign":"https://www.jewniversecrafts.com/category/hanukkah-door-corner-signs"};
+const url=s=>WIXCAT[s]?WIXCAT[s]:WIXSLUG.has(s)?WIX+s:WIXMAP[s]?WIX+WIXMAP[s]:SHOP+"/physical-products/"+s;
 const P={
  dreidel:{name:"Hanukkah Dreidel Coaster Set",price:"$48, or $58 with your family name on the base",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
  dreidelName:{name:"Dreidel Coaster Set, family name base",price:"$58",slug:"custom-wood-hebrew-dreidel-set",custom:"Your family name goes on the base.",name_cta:true},
